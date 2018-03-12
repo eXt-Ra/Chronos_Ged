@@ -1,0 +1,47 @@
+{
+  "name": "Chronos_ged",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node ./build/main.js",
+    "dev": "backpack dev",
+    "build": "backpack build",
+    "test": "./node_modules/.bin/mocha test/**/*.js --require babel-core/register --reporter spec"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.6.0",
+    "axios": "^0.17.1",
+    "babel-core": "^6.26.0",
+    "babel-preset-latest": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
+    "backpack-core": "^0.5.0",
+    "base64-img": "^1.0.3",
+    "body-parser": "^1.18.2",
+    "chai": "^4.1.2",
+    "chai-fs": "^2.0.0",
+    "chai-string": "^1.4.0",
+    "chokidar": "^2.0.0",
+    "dns": "^0.2.2",
+    "express": "^4.14.0",
+    "file-type": "^7.5.0",
+    "gm": "^1.23.1",
+    "lodash": "^4.17.4",
+    "mkdirp": "^0.5.1",
+    "mocha": "^5.0.0",
+    "moment": "^2.20.1",
+    "mongoose": "^5.0.4",
+    "mysql": "^2.15.0",
+    "ncp": "^2.0.0",
+    "path": "^0.12.7",
+    "pdf2json": "^1.1.7",
+    "read-chunk": "^2.1.0",
+    "rimraf": "^2.6.2",
+    "unzip": "^0.1.11"
+  },
+  "babel": {
+    "presets": [
+      "stage-3",
+      "latest"
+    ]
+  }
+}
