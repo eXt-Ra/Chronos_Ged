@@ -66,7 +66,7 @@ export default function archiveFiles(positions) {
 
                         PositionSchema.findOneAndUpdate(
                             {numEquinoxe: position.numEquinoxe},
-                            {$set: {documents: position.document}}, function (err) {
+                            {$set: {docs: position.docsToSchema}}, function (err) {
                                 if (err) {
                                     console.log(err);
                                 }

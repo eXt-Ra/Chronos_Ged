@@ -81,6 +81,14 @@ export default class Position {
         };
     }
 
+    get docsToSchema(){
+        const outputDoc = [];
+        this._documents.forEach(document => {
+            outputDoc.push(document.toSchema())
+        });
+        return outputDoc;
+    }
+
     constructor(numEquinoxe, codeEdi, societe, archiveSource) {
         this._numEquinoxe = numEquinoxe;
         this._codeEdi = codeEdi;
