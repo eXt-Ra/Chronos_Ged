@@ -13,14 +13,12 @@ import path from "path";
 export default function unZip(pathZip) {
     return new Promise((resolve, reject) => {
             const arrSplit = pathZip.split(path.sep);
-            console.log(arrSplit);
             const codeEdi = arrSplit[arrSplit.length - 3];
-            console.log(codeEdi);
             const zipFolder = arrSplit[arrSplit.length - 1].slice(0, -4);
             const zipName = arrSplit[arrSplit.length - 1];
             const outputDir = path.join("output",codeEdi,zipFolder);
             fileTypeCheck(pathZip).then(type => {
-                if (type == "zip") {
+                if (type === "zip") {
                     fs.access(outputDir, err => {
                         if (!err) {
                             rimraf(outputDir, () => {

@@ -34,13 +34,11 @@ export default function archiveFiles(positions) {
             });
             promiseQ.push(
                 new Promise((resolve, reject) => {
-                    console.log("archive du zip");
-                    fs.rename(path.join("reception", positions[0].codeEdi, positions[0].archiveSource), path.join(positions[0].documents[0].currentFileLocation.replace("output", "archive"), positions[0].archiveSource), function (err) {
+                    fs.rename(path.join("reception", positions[0].codeEdi, "descente", positions[0].archiveSource), path.join(positions[0].documents[0].currentFileLocation.replace("output", "archive"), positions[0].archiveSource), function (err) {
                         if (err) {
                             console.log("archive du erreur");
                             reject(new GedError("Archive", `Archive du zip échoué de ${ positions[0].archiveSource}`, positions[0].archiveSource, positions[0].archiveSource, err, positions[0].codeEdi, 2, false));
                         }
-                        console.log("archive du zip");
                         resolve();
                     });
                 }).catch(errObj => {
@@ -67,7 +65,7 @@ export default function archiveFiles(positions) {
                         });
 
                         PositionSchema.findOneAndUpdate(
-                            { numEquinoxe: position.numEquinoxe},
+                            {numEquinoxe: position.numEquinoxe},
                             {$set: {documents: position.document}}, function (err) {
                                 if (err) {
                                     console.log(err);

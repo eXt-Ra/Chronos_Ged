@@ -81,7 +81,7 @@ watcher.on('add', filePath => {
                     return traitFiles(documents);
                 } else {
                     changeStatus(id, "Error Unzipper");
-                    return Promise.reject(new GedError("Stop", `Stop after unzipper pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after unzipper", filePath.split(path.sep)[filePath.split(path.sep).length - 2], 3, true));
+                    return Promise.reject(new GedError("Stop", `Stop after unzipper pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after unzipper", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
                 }
             })
             .then(documents => {
@@ -95,7 +95,7 @@ watcher.on('add', filePath => {
                     }
                 } else {
                     changeStatus(id, "Error TraitFiles");
-                    return Promise.reject(new GedError("Stop", `Stop after traiFiles pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after traiFiles", filePath.split(path.sep)[filePath.split(path.sep).length - 2], 3, true));
+                    return Promise.reject(new GedError("Stop", `Stop after traiFiles pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after traiFiles", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
                 }
             })
             .then(documents => {
@@ -105,7 +105,7 @@ watcher.on('add', filePath => {
                     return traitBarcode(documents);
                 } else {
                     changeStatus(id, "Error ReadBarcodes");
-                    return Promise.reject(new GedError("Stop", `Stop after readBarcodes pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after readBarcodes", filePath.split(path.sep)[filePath.split(path.sep).length - 2], 3, true));
+                    return Promise.reject(new GedError("Stop", `Stop after readBarcodes pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after readBarcodes", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
                 }
             })
             .then(positions => {
@@ -115,7 +115,7 @@ watcher.on('add', filePath => {
                     return savePositionsDB(positions);
                 } else {
                     changeStatus(id, "Error TraitBarcodes");
-                    return Promise.reject(new GedError("Stop", `Stop after traitBarcode pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after traitBarcode", filePath.split(path.sep)[filePath.split(path.sep).length - 2], 3, true));
+                    return Promise.reject(new GedError("Stop", `Stop after traitBarcode pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after traitBarcode", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
                 }
             })
             .then(positions => {
@@ -125,7 +125,7 @@ watcher.on('add', filePath => {
                     return createLdsAndJpg0(positions);
                 } else {
                     changeStatus(id, "Error SavePositionsDB");
-                    return Promise.reject(new GedError("Stop", `Stop after savePositionsDB pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after savePositionsDB", filePath.split(path.sep)[filePath.split(path.sep).length - 2], 3, true));
+                    return Promise.reject(new GedError("Stop", `Stop after savePositionsDB pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after savePositionsDB", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
                 }
             })
             .then(positions => {
@@ -135,7 +135,7 @@ watcher.on('add', filePath => {
                     return archiveFiles(positions);
                 } else {
                     changeStatus(id, "Error CreateLdsAndJpg0");
-                    return Promise.reject(new GedError("Stop", `Stop after createLdsAndJpg0 pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after createLdsAndJpg0", filePath.split(path.sep)[filePath.split(path.sep).length - 2], 3, true));
+                    return Promise.reject(new GedError("Stop", `Stop after createLdsAndJpg0 pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after createLdsAndJpg0", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
                 }
             })
             .then(positions => {

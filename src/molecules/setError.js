@@ -19,7 +19,7 @@ export default function setError(errObj) {
             //move pdf to erreur
             console.log(errObj)
             mkdirp(`${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`, (err) => {
-                fs.rename(`${path}${_.endsWith(errObj.source, '.zip') === true ? `reception/${errObj.codeEdi}/` : `output/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`}/${errObj.source}`, `${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}/${errObj.source}`, function (err) {
+                fs.rename(`${path}${_.endsWith(errObj.source, '.zip') === true ? `reception/${errObj.codeEdi}/descente` : `output/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`}/${errObj.source}`, `${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}/${errObj.source}`, function (err) {
                     if (err) {
                         reject(err);
                         return;
