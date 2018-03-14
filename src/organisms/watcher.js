@@ -68,7 +68,7 @@ watcher
 
 watcher.on('add', filePath => {
     console.log(`File ${filePath} has been added`);
-    const codeEdi = filePath.split(path.sep)[filePath.split(path.sep).length - 2];
+    const codeEdi = filePath.split(path.sep)[filePath.split(path.sep).length - 3];
     const zipName = filePath.split(path.sep)[filePath.split(path.sep).length - 1].substring(0, filePath.split(path.sep)[filePath.split(path.sep).length - 1].length - 4);
     const id = `${codeEdi}_${zipName}`;
     if (_.endsWith(filePath, '.zip')) {

@@ -14,7 +14,7 @@ export default function (numEquinoxe, position) {
                         if (lines.length > 0) {
                             resolve([lines[0].PROPRIETE, lines[0].NUM_DOC]);
                         } else {
-                            reject(new GedError("DATA EQUINOXE", `no data found for ${numEquinoxe}`, position.archiveSource, position.archiveSource, `no data found for ${numEquinoxe}`, position.codeEdi, 2, false));
+                            reject(new GedError("DATA EQUINOXE", `no data found for ${numEquinoxe}`, "unknown", position.archiveSource, `no data found for ${numEquinoxe}`, position.codeEdi, 2, false));
                         }
                     }
                     connection.release();

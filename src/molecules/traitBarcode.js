@@ -113,7 +113,8 @@ export default function traitBarcode(documents) {
                 }).catch(errObj => {
                     //find and delete pos
                     // positions.splice(index, 1);
-                    setError(errObj)
+                    setError(errObj);
+                    resolve();
                 })
             }))
         });
