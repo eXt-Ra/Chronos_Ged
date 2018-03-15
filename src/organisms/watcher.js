@@ -14,49 +14,27 @@ import Suivi from "../Class/Suivi";
 
 import path from 'path'
 import traitRetour from "../molecules/traitRetour";
+import async from "async";
 
-const watcher = chokidar.watch('reception', {
-    awaitWriteFinish: true
-});
+let watcher;
+if (process.env.NODE_ENV === "development"){
+    console.log("here")
+    watcher = chokidar.watch('reception', {
+        awaitWriteFinish: true
+    });
+}else{
+    watcher = chokidar.watch('Z:\\reception', {
+        awaitWriteFinish: true
+    });
+}
 
-// addSuivi(new Suivi("SOC-TEST", "test.zip"));
-// setTimeout(function () {
-//     changeProgress("SOC-TEST_test", 10);
-//     changeStatus("SOC-TEST_test", "State 1");
-//     setTimeout(function () {
-//         changeProgress("SOC-TEST_test", 30);
-//         addSuivi(new Suivi("YOLO-TEST", "test.zip"));
-//         changeStatus("SOC-TEST_test", "State 2");
-//         setTimeout(function () {
-//             changeProgress("SOC-TEST_test", 50);
-//             changeProgress("YOLO-TEST_test", 20);
-//             changeStatus("SOC-TEST_test", "State 3");
-//             setTimeout(function () {
-//                 changeProgress("SOC-TEST_test", 70);
-//                 changeProgress("YOLO-TEST_test", 50);
-//                 changeStatus("SOC-TEST_test", "State 4");
-//                 setTimeout(function () {
-//                     changeProgress("SOC-TEST_test", 90);
-//                     changeProgress("YOLO-TEST_test", 70);
-//                     changeStatus("SOC-TEST_test", "State 5");
-//                     setTimeout(function () {
-//                         changeProgress("SOC-TEST_test", 100);
-//                         changeProgress("YOLO-TEST_test", 90);
-//                         changeStatus("SOC-TEST_test", "State 6");
-//                         setTimeout(function () {
-//                             changeProgress("YOLO-TEST_test", 100);
-//                         }, 3000);
-//                     }, 3000);
-//                 }, 3000);
-//             }, 3000);
-//         }, 3000);
-//     }, 3000);
-// }, 3000);
+
+
 
 watcher
-    // .on('addDir', filePath => {
-    //     console.log(filePath.split(path.sep))
-    // })
+// .on('addDir', filePath => {
+//     console.log(filePath.split(path.sep))
+// })
     .on('unlinkDir', filePath => console.log(`Directory ${filePath} has been removed`))
     .on('error', error => console.log(`Watcher error: ${error}`))
     .on('ready', () => console.log('Initial scan complete. Ready for changes'))

@@ -11,47 +11,45 @@ const exec = require('child_process').exec;
 export default function readBarcode(documents) {
     return new Promise((resolve, reject) => {
         const documentsFilter = [];
-        require('dns').lookup(require('os').hostname(), function (err, add, fam) {
-            if (add === "172.18.18.2") {
-                async.eachOfLimit(documents, 1, (document, index, callback) => {
-                    findPoleBarcode(document).then(barcode => {
-                        if (barcode !== "noBarcode") {
-                            console.log(barcode);
-                            document.barecode = barcode;
-                        } else {
-                            console.log("noBarcode");
-                            document.barecode = "noBarcode";
-                        }
-                        documentsFilter.push(document);
-                        callback();
-                    }).catch(errObj => {
-                        setError(errObj);
-                        console.log("Error");
-                        document.barecode = "Error";
-                        documentsFilter.push(document);
-                        // documents.splice(index, 1);
-                        callback();
-                    })
-                }, function () {
-                    resolve(documentsFilter);
-                });
-            } else {
-                async.eachOfLimit(documents, 1, (document, index, callback) => {
-                    findPoleBarcodeApi(document).then(barcode => {
+        if (process.env.NODE_ENV !== "development") {
+            async.eachOfLimit(documents, 1, (document, index, callback) => {
+                findPoleBarcode(document).then(barcode => {
+                    if (barcode !== "noBarcode") {
+                        console.log(barcode);
                         document.barecode = barcode;
-                        documentsFilter.push(document);
-                        callback();
-                    }).catch(errObj => {
-                        setError(errObj);
+                    } else {
+                        console.log("noBarcode");
+                        document.barecode = "noBarcode";
+                    }
+                    documentsFilter.push(document);
+                    callback();
+                }).catch(errObj => {
+                    setError(errObj);
+                    console.log("Error");
+                    document.barecode = "Error";
+                    documentsFilter.push(document);
+                    // documents.splice(index, 1);
+                    callback();
+                })
+            }, function () {
+                resolve(documentsFilter);
+            });
+        } else {
+            async.eachOfLimit(documents, 1, (document, index, callback) => {
+                findPoleBarcodeApi(document).then(barcode => {
+                    document.barecode = barcode;
+                    documentsFilter.push(document);
+                    callback();
+                }).catch(errObj => {
+                    setError(errObj);
 
-                        // documents.splice(index, 1);
-                        callback();
-                    })
-                }, function () {
-                    resolve(documentsFilter);
-                });
-            }
-        });
+                    // documents.splice(index, 1);
+                    callback();
+                })
+            }, function () {
+                resolve(documentsFilter);
+            });
+        }
     });
 };
 
