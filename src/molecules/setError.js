@@ -18,14 +18,41 @@ export default function setError(errObj) {
             }
             //move pdf to erreur
             console.log(errObj);
+            let archiveLocation;
+            if (process.env.NODE_ENV === "development") {
+                archiveLocation = "";
+            } else {
+                archiveLocation = "Z:\\";
+            }
             if (errObj.source !== "unknown"){
                 mkdirp(`${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`, (err) => {
-                    fs.rename(`${path}${_.endsWith(errObj.source, '.zip') === true ? `reception/${errObj.codeEdi}/descente` : `output/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`}/${errObj.source}`, `${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}/${errObj.source}`, function (err) {
-                        if (err) {
-                            reject(err);
-                            return;
-                        }
-                        resolve();
+                    // fs.rename(`${path}${_.endsWith(errObj.source, '.zip') === true ? `${archiveLocation}reception/${errObj.codeEdi}/descente` : `output/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`}/${errObj.source}`, `${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}/${errObj.source}`, function (err) {
+                    //     if (err) {
+                    //         reject(err);
+                    //         return;
+                    //     }
+                    //     resolve();
+                    // });
+
+                    const is = fs.createReadStream(`${path}${_.endsWith(errObj.source, '.zip') === true ? `${archiveLocation}reception/${errObj.codeEdi}/descente` : `output/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`}/${errObj.source}`),
+                        os = fs.createWriteStream(`${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}/${errObj.source}`);
+
+                    is.pipe(os);
+
+                    is.on('end', function () {
+                        fs.unlink(`${path}${_.endsWith(errObj.source, '.zip') === true ? `${archiveLocation}reception/${errObj.codeEdi}/descente` : `output/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`}/${errObj.source}`, err => {
+                            if (err) {
+                                throw err;
+                            } else {
+                                resolve();
+                            }
+                        });
+                    });
+                    is.on('error', function (err) {
+                        throw err;
+                    });
+                    os.on('error', function (err) {
+                        throw err;
                     });
                 });
             }

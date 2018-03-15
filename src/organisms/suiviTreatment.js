@@ -1,5 +1,3 @@
-import Suivi from "../Class/Suivi";
-
 const currentSuivi = [];
 import SuiviSchema from '../Schema/SuiviSchema'
 

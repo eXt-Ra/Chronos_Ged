@@ -103,25 +103,43 @@ gedRouter.use(function timeLog(req, res, next) {
     next();
 });
 
+let archiveLocation;
+if (process.env.NODE_ENV === "development") {
+    archiveLocation = "";
+} else {
+    archiveLocation = "Z:\\";
+}
+
 gedRouter.get('/:numeroequinoxe', function (req, res) {
     PositionSchema.findOne({
         numEquinoxe: req.params.numeroequinoxe
     }).then(position => {
         if (position !== null) {
             //retourner les documents merger en pdf
-            fileTypeCheck(path.join(position.docs[0].currentFileLocation,position.docs[0].fileName)).then(type => {
+            fileTypeCheck(`${archiveLocation}${path.join(position.docs[0].currentFileLocation, position.docs[0].fileName)}`).then(type => {
                 switch (type) {
                     case "pdf":
                         mergePdf(position.docs, position.numEquinoxe).then(files => {
-                            fs.rename(path.join(position.docs[0].currentFileLocation, files[0]), path.join("temp", files[0]), (err) => {
-                                if (err) {
-                                    throw err;
-                                }
+                            const is = fs.createReadStream(`${archiveLocation}${path.join(position.docs[0].currentFileLocation, files[0])}`),
+                                os = fs.createWriteStream(path.join("temp", files[0]));
+                            is.pipe(os);
+                            is.on('end', function () {
                                 fs.readFile(path.join("temp", files[0]), function (err, data) {
                                     res.contentType("application/pdf");
                                     res.send(data);
                                     console.timeEnd("requestApi");
                                 });
+                                fs.unlink(`${archiveLocation}${path.join(position.docs[0].currentFileLocation, files[0])}`, err => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                });
+                            });
+                            is.on('error', function (err) {
+                                throw err;
+                            });
+                            os.on('error', function (err) {
+                                throw err;
                             });
                         }).catch(err => {
                             res.status(500).send(err);
@@ -130,15 +148,26 @@ gedRouter.get('/:numeroequinoxe', function (req, res) {
                     case "jpg":
                         converToPdf(position.docs, position.numEquinoxe).then(docs => {
                             mergePdf(docs, position.numEquinoxe).then(files => {
-                                fs.rename(path.join(position.docs[0].currentFileLocation, files[0]), path.join("temp", files[0]), (err) => {
-                                    if (err) {
-                                        throw err;
-                                    }
+                                const is = fs.createReadStream(`${archiveLocation}${path.join(position.docs[0].currentFileLocation, files[0])}`),
+                                    os = fs.createWriteStream(path.join("temp", files[0]));
+                                is.pipe(os);
+                                is.on('end', function () {
                                     fs.readFile(path.join("temp", files[0]), function (err, data) {
                                         res.contentType("application/pdf");
                                         res.send(data);
                                         console.timeEnd("requestApi");
                                     });
+                                    fs.unlink(`${archiveLocation}${path.join(position.docs[0].currentFileLocation, files[0])}`, err => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                    });
+                                });
+                                is.on('error', function (err) {
+                                    throw err;
+                                });
+                                os.on('error', function (err) {
+                                    throw err;
                                 });
                             }).catch(err => {
                                 res.status(500).send(err);
@@ -149,7 +178,7 @@ gedRouter.get('/:numeroequinoxe', function (req, res) {
                         //TODO
                         break;
                     default:
-                        res.status(500).send("Erreur fichier non supporté");
+                        res.status(404).send("Erreur fichier non supporté");
                         return;
                 }
             });

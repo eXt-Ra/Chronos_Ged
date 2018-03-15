@@ -4,12 +4,19 @@ import gm from "gm";
 
 export default function converToPdf(documents, numEquinoxe) {
     return new Promise((resolve, reject) => {
+        let archiveLocation;
+        if (process.env.NODE_ENV === "development") {
+            archiveLocation = "";
+        } else {
+            archiveLocation = "Z:\\";
+        }
+
         const output = [];
         const promiseQ = [];
         documents.forEach((document, index) => {
             promiseQ.push(new Promise((resolve2, reject2) => {
-                gm(path.join(document.currentFileLocation, document.fileName))
-                    .write(path.join(documents[0].currentFileLocation, `${index}_${document.fileName.substring(0, document.fileName.length - 4)}_cv.pdf`), function (err) {
+                gm(`${archiveLocation}${path.join(document.currentFileLocation, document.fileName)}`)
+                    .write(`${archiveLocation}${path.join(documents[0].currentFileLocation, `${index}_${document.fileName.substring(0, document.fileName.length - 4)}_cv.pdf`)}`, function (err) {
                         if (err) {
                             reject(new GedError("converToPdf", `Error on gm cmd de ${numEquinoxe}`, documents[0].fileName, documents[0].archiveSource, err, documents[0].codeEdi, 2, false));
                         } else {

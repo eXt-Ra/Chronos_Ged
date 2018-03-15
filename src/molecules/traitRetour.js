@@ -13,13 +13,13 @@ export default function traitRetour(positions) {
             });
         }
         //remettant want retour ?
-        // positions.forEach(position => {
-        //     if (wantRetour(position.remettant)) {
-        //         promiseQ.push(
-        //             traitFileRetour(position, true)
-        //         )
-        //     }
-        // });
+        positions.forEach(position => {
+            if (wantRetour(position.remettant)) {
+                promiseQ.push(
+                    traitFileRetour(position, true)
+                )
+            }
+        });
 
         Promise.all(promiseQ).then(results => {
             const output = [];

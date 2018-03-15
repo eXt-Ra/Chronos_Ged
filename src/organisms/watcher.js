@@ -18,7 +18,6 @@ import async from "async";
 
 let watcher;
 if (process.env.NODE_ENV === "development"){
-    console.log("here")
     watcher = chokidar.watch('reception', {
         awaitWriteFinish: true
     });

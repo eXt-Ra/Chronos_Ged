@@ -11,88 +11,40 @@ const exec = require('child_process').exec;
 export default function readBarcode(documents) {
     return new Promise((resolve, reject) => {
         const documentsFilter = [];
-        if (process.env.NODE_ENV !== "development") {
-            async.eachOfLimit(documents, 1, (document, index, callback) => {
-                findPoleBarcode(document).then(barcode => {
-                    if (barcode !== "noBarcode") {
-                        console.log(barcode);
-                        document.barecode = barcode;
-                    } else {
-                        console.log("noBarcode");
-                        document.barecode = "noBarcode";
-                    }
-                    documentsFilter.push(document);
-                    callback();
-                }).catch(errObj => {
-                    setError(errObj);
-                    console.log("Error");
-                    document.barecode = "Error";
-                    documentsFilter.push(document);
-                    // documents.splice(index, 1);
-                    callback();
-                })
-            }, function () {
-                resolve(documentsFilter);
-            });
-        } else {
-            async.eachOfLimit(documents, 1, (document, index, callback) => {
-                findPoleBarcodeApi(document).then(barcode => {
-                    document.barecode = barcode;
-                    documentsFilter.push(document);
-                    callback();
-                }).catch(errObj => {
-                    setError(errObj);
+        findPoleBarcode(documents).then(barcodes => {
+            documents.forEach((doc) => {
+                const barecode = barcodes.find(item => {
+                    return item.PathName.split(path.sep)[item.PathName.split(path.sep).length - 1] === doc.fileName;
+                });
 
-                    // documents.splice(index, 1);
-                    callback();
-                })
-            }, function () {
-                resolve(documentsFilter);
+                function error() {
+                    throw new Error("Pas trouvée no prod")
+                }
+
+                doc.barecode = barecode ? barecode.codebarres : error()
             });
-        }
+            resolve(documents);
+        }).catch(errObj => {
+            setError(errObj);
+            resolve([])
+        })
     });
 };
 
-function findPoleBarcode(document) {
+function findPoleBarcode(documents) {
     return new Promise((resolve, reject) => {
-        exec(`php barcodereader.php ${document.filePath}`, function (err, data) {
-            if (err) {
-                reject(new GedError("Barcode", `Erreur lors du barcodereader de ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
-                return
-            }
-
-            if (data !== "noBarcode") {
-                if (_.startsWith(data, '[')) {
-                    resolve(JSON.parse(data));
-                } else {
-                    setTimeout(() => {
-                        exec(`php barcodereader.php ${document.filePath}`, function (err, data) {
-                            if (err) {
-                                reject(new GedError("Barcode", `Erreur lors du barcodereader de ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
-                                return
-                            }
-
-                            if (data !== "noBarcode") {
-                                if (_.startsWith(data, '[')) {
-                                    resolve(JSON.parse(data));
-                                } else {
-                                    reject(new GedError("Barcode", `Erreur lors du barcodereader de ${document.fileName}`, document.fileName, document.archiveSource, data, document.codeEdi, 2, false));
-                                }
-
-                            } else if (data === "noBarcode") {
-                                resolve("noBarcode");
-                            }
-
-                        });
-                    }, 1000)
-                }
-
-            } else if (data === "noBarcode") {
-                resolve("noBarcode");
-            }
-
+        const postDocumentsFilepath = [];
+        documents.forEach(doc => {
+            postDocumentsFilepath.push(doc.filePath);
         });
-
+        axios.post(`http://localhost:51265/api/inlite`, {
+            documents: postDocumentsFilepath,
+        }).then(res => {
+            console.log(res.data[0].PathName)
+            resolve(res.data);
+        }).catch(err => {
+            reject(new GedError("Barcode", `Erreur lors du axios de ${documents[0].archiveSource}`, documents[0].archiveSource, documents[0].archiveSource, err,documents[0].codeEdi, 3, true));
+        })
     });
 }
 
