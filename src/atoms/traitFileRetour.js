@@ -59,7 +59,7 @@ export default function traitFileRetour(position, remettant) {
             return new Promise(((resolve2, reject2) => {
                 switch (type) {
                     case "pdf":
-                        converToPdf(position.documents, position.numEquinoxe).then(documents => {
+                        converToPdf(position.documents, position.numEquinoxe, remettant).then(documents => {
                             if (merge) {
                                 mergePdf(documents, position.numEquinoxe).then(files => {
                                     //delete old pdf
@@ -116,7 +116,13 @@ export default function traitFileRetour(position, remettant) {
             }))
         }
 
-        fileTypeCheck(position.documents[0].filePath).then(type => {
+        let archiveLocation;
+        if (process.env.NODE_ENV === "development") {
+            archiveLocation = "";
+        } else {
+            archiveLocation = "Z:\\";
+        }
+        fileTypeCheck(path.join(archiveLocation, position.documents[0].filePath)).then(type => {
             if (conf.multi) {
                 //merge des fichiers
                 if (conf.fileType === type) {
@@ -129,83 +135,100 @@ export default function traitFileRetour(position, remettant) {
             }
         }).then(files => {
             const promiseQ = [];
-            mkdirp(`${path.join("reception",position.codeEdi,"remonte")}`, () => {
-                files.forEach(file => {
-                    switch (conf.nomenclature) {
-                        case "numeroEquinoxe_date":
-                            promiseQ.push(new Promise((resolve2, reject2) => {
-                                fs.copy(path.join(position.documents[0].currentFileLocation, file), path.join("reception",position.codeEdi,"remonte",`${position.numEquinoxe}_${moment().format()}${file.substr(file.length - 4)}`), err => {
-                                    if (err) return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
-                                    resolve2(`${position.numEquinoxe}_${moment().format()}${file.substr(file.length - 4)}`);
-                                })
-                            }));
-                            break;
-                        case "numeroEquinoxe_date_page":
-                            promiseQ.push(new Promise((resolve2, reject2) => {
-                                fs.copy(path.join(position.documents[0].currentFileLocation, file), path.join("reception",position.codeEdi,"remonte",`${position.numEquinoxe}_${moment().format()}_${file.charAt(0)}${file.substr(file.length - 4)}`), err => {
-                                    if (err) return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
-                                    resolve2(`${position.numEquinoxe}_${moment().format()}_${file.charAt(0)}${file.substr(file.length - 4)}`);
-                                })
-                            }));
-                            break;
-                        case "PA-numeroEquinoxe_page" :
-                            promiseQ.push(new Promise((resolve2, reject2) => {
-                                fs.copy(path.join(position.documents[0].currentFileLocation, file), path.join("reception",position.codeEdi,"remonte",`PA-${position.numEquinoxe}_${file.charAt(0)}${file.substr(file.length - 4)}`), err => {
-                                    if (err) return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
-                                    resolve2(`PA-${position.numEquinoxe}_${file.charAt(0)}${file.substr(file.length - 4)}`);
-                                })
-                            }));
-                            break;
-                        case "numeroEquinoxe-page" :
-                            promiseQ.push(new Promise((resolve2, reject2) => {
-                                fs.copy(path.join(position.documents[0].currentFileLocation, file), path.join("reception",position.codeEdi,"remonte",`${position.numEquinoxe}-${file.charAt(0)}${file.substr(file.length - 4)}`), err => {
-                                    if (err) return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
-                                    resolve2(`${position.numEquinoxe}-${file.charAt(0)}${file.substr(file.length - 4)}`);
-                                })
-                            }));
-                            break;
-                        case "RE-refTMS_page" :
-                            promiseQ.push(new Promise((resolve2, reject2) => {
-                                getRefTMS(position).then(refTMS => {
-                                    fs.copy(path.join(position.documents[0].currentFileLocation, file), path.join("reception",position.codeEdi,"remonte",`RE-${refTMS}_${file.charAt(0)}${file.substr(file.length - 4)}`), err => {
-                                        if (err) return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
-                                        resolve2(`RE-${refTMS}_${file.charAt(0)}${file.substr(file.length - 4)}`);
-                                    })
-                                });
-                            }));
-                            break;
-                        case "refTMS-page" :
-                            promiseQ.push(new Promise((resolve2, reject2) => {
-                                getRefTMS(position).then(refTMS => {
-                                    fs.copy(path.join(position.documents[0].currentFileLocation, file), path.join("reception",position.codeEdi,"remonte",`${refTMS}-${file.charAt(0)}${file.substr(file.length - 4)}`), err => {
-                                        if (err) return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
-                                        resolve2(`${refTMS}-${file.charAt(0)}${file.substr(file.length - 4)}`);
-                                    })
-                                });
-                            }));
-                            break;
-                        case "numeroEquinoxe-refDitri_page" :
-                            promiseQ.push(new Promise((resolve2, reject2) => {
-                                fs.copy(path.join(position.documents[0].currentFileLocation, file), path.join("reception",position.codeEdi,"remonte",`${position.numEquinoxe}-${position.codeEdi}_${file.charAt(0)}${file.substr(file.length - 4)}`), err => {
-                                    if (err) return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
-                                    resolve2(`${position.numEquinoxe}-${position.codeEdi}_${file.charAt(0)}${file.substr(file.length - 4)}`);
-                                })
-                            }));
-                            break;
-                        case "numeroEquinoxe-refDitri-refTMS_page" :
-                            promiseQ.push(new Promise((resolve2, reject2) => {
-                                getRefTMS(position).then(refTMS => {
-                                    fs.copy(path.join(position.documents[0].currentFileLocation, file), path.join("reception",position.codeEdi,"remonte",`${position.numEquinoxe}-${position.codeEdi}-${refTMS}_${file.charAt(0)}${file.substr(file.length - 4)}`), err => {
-                                        if (err) return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
-                                        resolve2(`${position.numEquinoxe}-${position.codeEdi}-${refTMS}_${file.charAt(0)}${file.substr(file.length - 4)}`);
-                                    })
-                                });
-                            }));
-                            break;
-                        default:
-                            reject(new GedError("Nomenclature", `Nomenclature inconnu ${conf.nomenclature} for ${file}`, position.archiveSource, position.archiveSource, "", position.codeEdi, 3, false));
-                            break;
+
+            mkdirp(`${archiveLocation}${path.join("reception", position.codeEdi, "remonte")}`, () => {
+
+                const options = [{
+                    title: "SUFFIXE",
+                    fnc: () => {
+                        return conf.nomenclature.suffixe
                     }
+                }, {
+                    title: "PREFIXE",
+                    fnc: () => {
+                        return conf.nomenclature.prefixe
+                    }
+                }, {
+                    title: "NUMEROEQUINOXE",
+                    fnc: () => {
+                        return position.numEquinoxe
+                    }
+                }, {
+                    title: "DATE",
+                    fnc: () => {
+                        return moment().format();
+                    }
+                }, {
+                    title: "PAGE",
+                    fnc: (file) => {
+                        return file.charAt(0);
+                    }
+                }, {
+                    title: "REFDISTRI",
+                    fnc: () => {
+                        return position.codeEdi;
+                    }
+                }, {
+                    title: "REFTMS",
+                    fnc: () => {
+                        getRefTMS(position).then(refTMS => {
+                            console.log(refTMS);
+                            return refTMS;
+                        })
+                    }
+                }];
+
+                const currentOption = [];
+                options.forEach(option => {
+                    if (conf.nomenclature.pattern.indexOf(option.title) > -1) {
+                        currentOption.push(option);
+                    }
+                });
+
+                function generateNomenclature(nomenclature, currentOption, file, refTMS) {
+                    currentOption.forEach(option => {
+                        if (option.title === "REFTMS") {
+                            nomenclature = nomenclature.replace("REFTMS", refTMS);
+                        } else {
+                            nomenclature = nomenclature.replace(option.title, option.fnc(file));
+                        }
+
+                    });
+                    return nomenclature;
+                }
+
+                files.forEach(file => {
+                    promiseQ.push(new Promise((resolve2, reject2) => {
+                        if (conf.nomenclature.pattern.indexOf("REFTMS") > -1) {
+                            getRefTMS(position).then(refTMS => {
+                                const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, currentOption, file, refTMS)}${file.substr(file.length - 4)}`;
+                                fs.copy(
+                                    path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
+                                    path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
+                                        newFilePath),
+                                    err => {
+                                        if (err) {
+                                            return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
+                                        }
+                                        console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
+                                        resolve2(newFilePath);
+                                    });
+                            });
+                        } else {
+                            const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, currentOption, file)}${file.substr(file.length - 4)}`;
+                            fs.copy(
+                                path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
+                                path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
+                                    newFilePath),
+                                err => {
+                                    if (err) {
+                                        return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
+                                    }
+                                    console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
+                                    resolve2(newFilePath);
+                                });
+                        }
+                    }));
                 });
                 Promise.all(promiseQ).then(results => {
                     resolve(results);

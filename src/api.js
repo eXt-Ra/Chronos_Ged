@@ -7,7 +7,6 @@ import fs from 'fs';
 
 const express = require('express');
 const app = express();
-
 import bodyParser from 'body-parser';
 import mergePdf from "./atoms/mergePdf";
 import converToPdf from "./atoms/converToPdf";
@@ -15,6 +14,12 @@ import fileTypeCheck from "./atoms/fileTypeCheck";
 import GedError from "./Class/GedError";
 import mergeJpg from "./atoms/mergeJpg";
 import * as path from "path";
+
+
+import React from 'react';
+import { renderToString } from 'react-dom/server';
+import Page404 from "./View/404";
+import template from './View/template';
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -183,7 +188,12 @@ gedRouter.get('/:numeroequinoxe', function (req, res) {
                 }
             });
         } else {
-            res.status(404).send(`Aucune ged disponible pour le numéro ${req.params.numeroequinoxe}`);
+            const appString = renderToString(<Page404 />);
+
+            res.send(template({
+                body: appString,
+                title: 'Hello World from the server'
+            }))
         }
     })
 

@@ -5,6 +5,7 @@ import traitFiles from './../molecules/traitFiles';
 import readBarcode from '../molecules/readBarcode';
 import traitBarcode from '../molecules/traitBarcode';
 import savePositionsDB from '../molecules/savePositionsDB';
+import saveGedDownloadDB from '../molecules/saveGedDownloadDB';
 import createLdsAndJpg0 from '../molecules/createLdsAndJpg0';
 import archiveFiles from "../atoms/archiveFiles";
 import setError from "../molecules/setError";
@@ -12,22 +13,41 @@ import GedError from "../Class/GedError";
 import {addSuivi, changeProgress, changeStatus, removeSuivi} from "./suiviTreatment";
 import Suivi from "../Class/Suivi";
 
+import LineByLineReader from 'line-by-line';
+import downloadImages from "../atoms/downloadImages";
+
 import path from 'path'
 import traitRetour from "../molecules/traitRetour";
 import async from "async";
+import fileTypeCheck from "../atoms/fileTypeCheck";
 
 let watcher;
-if (process.env.NODE_ENV === "development"){
+if (process.env.NODE_ENV === "development") {
     watcher = chokidar.watch('reception', {
-        awaitWriteFinish: true
+        awaitWriteFinish: true,
+        ignored: [
+            'reception/CALVACOM'
+        ]
     });
-}else{
+} else {
     watcher = chokidar.watch('Z:\\reception', {
-        awaitWriteFinish: true
+        awaitWriteFinish: true,
+        ignored: [
+            'reception/CALVACOM'
+        ]
     });
 }
 
-
+let watcherCalva;
+if (process.env.NODE_ENV === "development") {
+    watcherCalva = chokidar.watch('reception/CALVACOM', {
+        awaitWriteFinish: true
+    });
+} else {
+    watcherCalva = chokidar.watch('Z:\\reception/CALVACOM', {
+        awaitWriteFinish: true
+    });
+}
 
 
 watcher
@@ -132,4 +152,59 @@ watcher.on('add', filePath => {
                 setError(err);
             })
     }
+});
+
+watcherCalva
+    .on('unlinkDir', filePath => console.log(`Directory ${filePath} has been removed`))
+    .on('error', error => console.log(`Watcher error: ${error}`))
+    .on('ready', () => console.log('Initial scan complete. Ready for changes'))
+    // .on('raw', (event, filePath, details) => {
+    //     console.log('Raw event info:', event, filePath, details);
+    // })
+    .on('change', filePath => console.log(`File ${filePath} has been changed`))
+    .on('unlink', filePath => console.log(`File ${filePath} has been removed`));
+
+let lines = [];
+let treatCalvaActive = false;
+
+function startTreatmentCalva() {
+    setTimeout(() => {
+        treatCalvaActive = false;
+        saveGedDownloadDB(lines).then(imagesToDl => {
+            lines = [];
+            downloadImages(imagesToDl).then(documents => {
+                return traitBarcode(documents);
+            }).then(positions => {
+                return savePositionsDB(positions);
+            }).then(positions => {
+                return createLdsAndJpg0(positions);
+            }).then(positions => {
+                return archiveFiles(positions);
+            }).then(positions => {
+                return traitRetour(positions);
+            })
+        })
+    }, 5000)
+}
+
+watcherCalva.on('add', filePath => {
+    console.log(`File ${filePath} has been added`);
+    if (_.endsWith(filePath, '.TXT')) {
+        const lr = new LineByLineReader(filePath);
+        lr.on('error', function (err) {
+            // 'err' contains error object
+        });
+
+        lr.on('line', function (line) {
+            lines.push({line: line, filePath: filePath});
+        });
+
+        lr.on('end', function () {
+            if (!treatCalvaActive) {
+                treatCalvaActive = true;
+                startTreatmentCalva();
+            }
+        });
+    }
+
 });

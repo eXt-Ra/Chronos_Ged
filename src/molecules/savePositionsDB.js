@@ -1,6 +1,7 @@
 import PositionMongo from './../Schema/PositionSchema'
 import GedError from "../Class/GedError";
 import setError from "./setError";
+import * as async from "async";
 
 export default function (positions) {
     function mongodbTransaction(position) {
@@ -18,7 +19,7 @@ export default function (positions) {
                     });
                 } else {
                     //position exist add document to the positionInMongo
-                    positionInMongo.docs.push(position.documents);
+                    positionInMongo.docs = positionInMongo.docs.concat(position.documents);
                     positionInMongo.save((err) => {
                         if (err) {
                             reject(new GedError("DB", `Update DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
@@ -36,16 +37,41 @@ export default function (positions) {
     }
 
     return new Promise((resolve, reject) => {
-        const promiseQ = [];
-        positions.forEach(position => {
-            promiseQ.push(mongodbTransaction(position))
-        });
-        Promise.all(promiseQ).then(() => {
-            resolve(positions);
-        }).catch(errObj => {
-            //TODO did this trigger ?
-            console.log("Err that should not be trigger");
-            reject(errObj);
-        })
+        // const promiseQ = [];
+        // positions.forEach(position => {
+        //     promiseQ.push(
+        //         mongodbTransaction(position)
+        //     )
+        // });
+        // Promise.all(promiseQ).then(() => {
+        //     resolve(positions);
+        // }).catch(errObj => {
+        //     //TODO did this trigger ?
+        //     console.log("Err that should not be trigger");
+        //     reject(errObj);
+        // });
+
+
+        async.eachLimit(positions, 1,
+            function (position, callback) {
+                mongodbTransaction(position).then(() => {
+                    callback();
+                }).catch(errObj => {
+                    //TODO did this trigger ?
+                    console.log("Err that should not be trigger");
+                    reject(errObj);
+                    callback();
+                })
+            },
+            function (err) {
+                // if any of the file processing produced an error, err would equal that error
+                if (err) {
+                    // One of the iterations produced an error.
+                    // All processing will now stop.
+                    console.log('A file failed to process');
+                } else {
+                    resolve(positions);
+                }
+            });
     })
 }

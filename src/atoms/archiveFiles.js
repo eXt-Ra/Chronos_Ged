@@ -53,35 +53,66 @@ export default function archiveFiles(positions) {
                     });
                 });
             });
-            promiseQ.push(
-                new Promise((resolve, reject) => {
-                    mkdirp(positions[0].documents[0].currentFileLocation.replace("output", `${archiveLocation}archive`), () => {
-                        const is = fs.createReadStream(path.join(`${archiveLocation}reception`, positions[0].codeEdi, "descente", positions[0].archiveSource)),
-                            os = fs.createWriteStream(path.join(positions[0].documents[0].currentFileLocation.replace("output", `${archiveLocation}archive`), positions[0].archiveSource));
 
-                        is.pipe(os);
+            if (positions[0].documents[0].filePath.indexOf("CALVACOM") > -1) {
+                positions.forEach(position => {
+                    promiseQ.push(
+                        new Promise((resolve, reject) => {
+                            mkdirp(position.documents[0].currentFileLocation.replace("output", `${archiveLocation}archive`), () => {
+                                const is = fs.createReadStream(path.join(`${archiveLocation}reception`, "CALVACOM", "descente", position.archiveSource)),
+                                    os = fs.createWriteStream(path.join(position.documents[0].currentFileLocation.replace("output", `${archiveLocation}archive`), position.archiveSource));
 
-                        is.on('end', function () {
-                            fs.unlink(path.join(`${archiveLocation}reception`, positions[0].codeEdi, "descente", positions[0].archiveSource), err => {
-                                if (err) {
+                                is.pipe(os);
+
+                                is.on('end', function () {
+                                    fs.unlink(path.join(`${archiveLocation}reception`, "CALVACOM", "descente", position.archiveSource), err => {
+                                        resolve();
+                                    });
+                                });
+                                is.on('error', function (err) {
                                     throw err;
-                                } else {
-                                    resolve();
-                                }
+                                });
+                                os.on('error', function (err) {
+                                    throw err;
+                                });
+                            });
+
+                        }).catch(errObj => {
+                            setError(errObj);
+                        })
+                    );
+                })
+            } else {
+                promiseQ.push(
+                    new Promise((resolve, reject) => {
+                        mkdirp(positions[0].documents[0].currentFileLocation.replace("output", `${archiveLocation}archive`), () => {
+                            const is = fs.createReadStream(path.join(`${archiveLocation}reception`, positions[0].codeEdi, "descente", positions[0].archiveSource)),
+                                os = fs.createWriteStream(path.join(positions[0].documents[0].currentFileLocation.replace("output", `${archiveLocation}archive`), positions[0].archiveSource));
+
+                            is.pipe(os);
+
+                            is.on('end', function () {
+                                fs.unlink(path.join(`${archiveLocation}reception`, positions[0].codeEdi, "descente", positions[0].archiveSource), err => {
+                                    if (err) {
+                                        throw err;
+                                    } else {
+                                        resolve();
+                                    }
+                                });
+                            });
+                            is.on('error', function (err) {
+                                throw err;
+                            });
+                            os.on('error', function (err) {
+                                throw err;
                             });
                         });
-                        is.on('error', function (err) {
-                            throw err;
-                        });
-                        os.on('error', function (err) {
-                            throw err;
-                        });
-                    });
 
-                }).catch(errObj => {
-                    setError(errObj);
-                })
-            );
+                    }).catch(errObj => {
+                        setError(errObj);
+                    })
+                );
+            }
             promiseQ.push(
                 new Promise((resolve, reject) => {
                     ncp(path.join(positions[0].documents[0].currentFileLocation, "lds"), `${archiveLocation}lds`, function (err) {
@@ -95,7 +126,7 @@ export default function archiveFiles(positions) {
                 })
             );
             Promise.all(promiseQ).then(() => {
-                rimraf(positions[0].documents[0].currentFileLocation, () => {
+                if (positions[0].documents[0].filePath.indexOf("CALVACOM") > -1) {
                     positions.forEach(position => {
                         position.documents.forEach(document => {
                             document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
@@ -109,8 +140,26 @@ export default function archiveFiles(positions) {
                                 }
                             });
                     });
+
                     resolve(positions);
-                });
+                } else {
+                    rimraf(positions[0].documents[0].currentFileLocation, () => {
+                        positions.forEach(position => {
+                            position.documents.forEach(document => {
+                                document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
+                            });
+
+                            PositionSchema.findOneAndUpdate(
+                                {numEquinoxe: position.numEquinoxe},
+                                {$set: {docs: position.docsToSchema}}, function (err) {
+                                    if (err) {
+                                        console.log(err);
+                                    }
+                                });
+                        });
+                        resolve(positions);
+                    });
+                }
             }).catch(err => {
                 //TODO did this trigger ?
                 console.log("Err that should not be trigger");

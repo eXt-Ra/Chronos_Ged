@@ -4,9 +4,6 @@ import './api'
 require("./connmongo")();
 // Use native promises
 import mongoose from "mongoose";
-import PositionMongo from "./Schema/PositionSchema";
-import GedError from "./Class/GedError";
-import * as path from "path";
 
 mongoose.Promise = Promise;
 
@@ -62,5 +59,3 @@ mongoose.Promise = Promise;
 //         resolve()
 //     }
 // });
-
-

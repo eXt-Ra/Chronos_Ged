@@ -13,10 +13,12 @@
     "axios": "^0.17.1",
     "babel-core": "^6.26.0",
     "babel-preset-latest": "^6.24.1",
+    "babel-preset-react": "^6.11.1",
     "babel-preset-stage-3": "^6.24.1",
     "backpack-core": "^0.5.0",
     "base64-img": "^1.0.3",
     "body-parser": "^1.18.2",
+    "bootstrap": "^4.0.0",
     "chai": "^4.1.2",
     "chai-fs": "^2.0.0",
     "chai-string": "^1.4.0",
@@ -26,6 +28,7 @@
     "file-type": "^7.5.0",
     "fs-extra": "^5.0.0",
     "gm": "^1.23.1",
+    "line-by-line": "^0.1.6",
     "lodash": "^4.17.4",
     "mkdirp": "^0.5.1",
     "mocha": "^5.0.0",
@@ -35,6 +38,10 @@
     "ncp": "^2.0.0",
     "path": "^0.12.7",
     "pdf2json": "^1.1.7",
+    "react": "latest",
+    "react-dom": "^16.2.0",
+    "react-transition-group": "^2.2.1",
+    "reactstrap": "^4.8.0",
     "read-chunk": "^2.1.0",
     "rimraf": "^2.6.2",
     "unzip": "^0.1.11"
@@ -44,5 +51,8 @@
       "stage-3",
       "latest"
     ]
+  },
+  "devDependencies": {
+    "css-loader": "^0.28.11"
   }
 }
