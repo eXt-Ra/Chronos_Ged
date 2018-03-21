@@ -1,7 +1,5 @@
-const currentSuivi = [];
 import SuiviSchema from '../Schema/SuiviSchema'
-
-
+import {currentSuivi} from './../organisms/watcher'
 
 function findSuivi(id) {
     return currentSuivi.findIndex(suivi => {
@@ -67,16 +65,19 @@ const addLog = function addLog(id, log) {
 
 const changeStatus = function changeStatus(id, status) {
     return new Promise((resolve, reject) => {
-        currentSuivi[findSuivi(id)].status = status;
-        SuiviSchema.findOneAndUpdate(
-            {id: id},
-            {$set: {status: status}}, function (err, doc) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
+        if (findSuivi(id) > -1) {
+            currentSuivi[findSuivi(id)].status ? currentSuivi[findSuivi(id)].status = status : null;
+            SuiviSchema.findOneAndUpdate(
+                {id: id},
+                {$set: {status: status}}, function (err, doc) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+        }
+
     }).catch(err => {
         console.log(err);
     })
@@ -84,7 +85,9 @@ const changeStatus = function changeStatus(id, status) {
 
 const changeProgress = function changeProgress(id, progress) {
     return new Promise((resolve, reject) => {
-        currentSuivi[findSuivi(id)].progress = progress;
+        if (findSuivi(id) > -1) {
+            currentSuivi[findSuivi(id)].progress = progress;
+        }
         resolve();
     }).catch(err => {
         console.log(err);

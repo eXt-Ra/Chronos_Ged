@@ -1,19 +1,19 @@
 import moment from 'moment';
 
 export default class Suivi {
-    get id() {
-        return this._id;
-    }
-
-    set id(value) {
-        this._id = value;
-    }
     get progress() {
         return this._progress;
     }
 
     set progress(value) {
         this._progress = value;
+    }
+    get id() {
+        return this._id;
+    }
+
+    set id(value) {
+        this._id = value;
     }
 
     get log() {

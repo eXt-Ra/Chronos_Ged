@@ -21,7 +21,11 @@ import traitRetour from "../molecules/traitRetour";
 import async from "async";
 import fileTypeCheck from "../atoms/fileTypeCheck";
 
+const currentSuivi = [];
+export {currentSuivi};
+
 let watcher;
+console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "development") {
     watcher = chokidar.watch('reception', {
         awaitWriteFinish: true,

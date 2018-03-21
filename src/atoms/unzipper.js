@@ -35,17 +35,17 @@ export default function unZip(pathZip) {
                                 const stream = readStream
                                     .pipe(unzip.Parse())
                                     .on('error', err => {
-                                        reject(new GedError("Zip", "Erreur lors de l'extraction de l'archive", zipName, zipName, err, codeEdi, 3, true));
+                                        reject(new GedError("100", "Erreur lors de l'extraction de l'archive", zipName, zipName, err, codeEdi, 3, true));
                                     })
                                     .pipe(writeStream)
                                     .on('error', err => {
-                                        reject(new GedError("Zip", "Erreur lors de l'écriture du output du fichier zip", zipName, zipName, err, codeEdi, 3, true));
+                                        reject(new GedError("101", "Erreur lors de l'écriture du output du fichier zip", zipName, zipName, err, codeEdi, 3, true));
                                     });
 
                                 stream.on('close', () => {
                                     fs.readdir(outputDir, function (err, items) {
                                         if (err) {
-                                            reject(new GedError("Zip", `Impossible de fs.readdir le dossier ${outputDir}`, zipName, zipName, err, codeEdi, 3, true));
+                                            reject(new GedError("102", `Impossible de fs.readdir le dossier ${outputDir}`, zipName, zipName, err, codeEdi, 3, true));
                                             return;
                                         }
                                         const files = [];
@@ -63,11 +63,11 @@ export default function unZip(pathZip) {
                                                 resolve(files);
 
                                             } else {
-                                                reject(new GedError("DB", `Societe introuvable pour le codeEdi ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
+                                                reject(new GedError("200", `Societe introuvable pour le codeEdi ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
                                             }
                                         }).catch(err => {
                                             if (err) {
-                                                reject(new GedError("DB", `Erreur lors de l'acces MongoDB pour la recherche de societe ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
+                                                reject(new GedError("201", `Erreur lors de l'acces MongoDB pour la recherche de societe ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
                                             }
                                         });
                                     });
@@ -79,7 +79,7 @@ export default function unZip(pathZip) {
                     reject(new GedError("Zip", `Pas un fichier .zip`, zipName, zipName, "", codeEdi, 3, true));
                 }
             }).catch(err => {
-                reject(new GedError("Zip", `Erreur lors du test de type de fichier`, zipName, zipName, err, codeEdi, 3, true));
+                reject(new GedError("103", `Erreur lors du test de type de fichier`, zipName, zipName, err, codeEdi, 3, true));
             })
         }
     );

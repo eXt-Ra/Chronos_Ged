@@ -36,3 +36,5 @@ archive
 output
 .idea
 temp
+
+*.TXT

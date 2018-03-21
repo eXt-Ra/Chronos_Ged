@@ -12,6 +12,8 @@ import fs from 'fs-extra'
 import * as path from "path";
 import moment from "moment";
 import mkdirp from "mkdirp";
+import * as async from "async";
+import setError from "../molecules/setError";
 
 export default function traitFileRetour(position, remettant) {
     //copy du fichier dans le dossier retour avec la bonne nomenclature et le bon type de fichier
@@ -198,43 +200,57 @@ export default function traitFileRetour(position, remettant) {
                 }
 
                 files.forEach(file => {
-                    promiseQ.push(new Promise((resolve2, reject2) => {
-                        if (conf.nomenclature.pattern.indexOf("REFTMS") > -1) {
-                            getRefTMS(position).then(refTMS => {
-                                const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, currentOption, file, refTMS)}${file.substr(file.length - 4)}`;
+                    promiseQ.push(
+                        function (callback) {
+                            if (conf.nomenclature.pattern.indexOf("REFTMS") > -1) {
+                                getRefTMS(position).then(refTMS => {
+                                    const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, currentOption, file, refTMS)}${file.substr(file.length - 4)}`;
+                                    fs.copy(
+                                        path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
+                                        path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
+                                            newFilePath),
+                                        err => {
+                                            if (err) {
+                                                return callback(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
+                                            }
+                                            console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
+                                            callback(null, newFilePath);
+                                        });
+                                });
+                            } else {
+                                const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, currentOption, file)}${file.substr(file.length - 4)}`;
                                 fs.copy(
                                     path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
                                     path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
                                         newFilePath),
                                     err => {
                                         if (err) {
-                                            return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
+                                            return callback(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
                                         }
                                         console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
-                                        resolve2(newFilePath);
+                                        callback(null, newFilePath);
                                     });
-                            });
-                        } else {
-                            const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, currentOption, file)}${file.substr(file.length - 4)}`;
-                            fs.copy(
-                                path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
-                                path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
-                                    newFilePath),
-                                err => {
-                                    if (err) {
-                                        return reject2(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
-                                    }
-                                    console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
-                                    resolve2(newFilePath);
-                                });
+                            }
                         }
-                    }));
+                    );
                 });
-                Promise.all(promiseQ).then(results => {
-                    resolve(results);
-                }).catch(err => {
-                    console.log(err);
-                });
+
+                async.parallelLimit(promiseQ, 3,
+                    function (errObj, results) {
+                        if (errObj) {
+                            console.log(errObj);
+                            // setError(errObj)
+                        } else {
+                            console.log("finish retour");
+                            resolve(results);
+                        }
+                    });
+
+                // Promise.all(promiseQ).then(results => {
+                //
+                // }).catch(err => {
+                //     console.log(err);
+                // });
             });
         }).catch(err => {
             console.log(err);

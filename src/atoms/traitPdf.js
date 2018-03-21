@@ -37,15 +37,24 @@ export default function traitPdf(documents) {
                 console.log(documents.length);
                 const promiseQ = [];
                 documents.forEach(document => {
-                    promiseQ.push(convertPdfToJpg(document));
+                    promiseQ.push(
+                        function (callback) {
+                            convertPdfToJpg(document).then(data => callback(null, data))
+                        });
                 });
-                Promise.all(promiseQ).then(results => {
-                    resolve(results);
-                }).catch(errObj => {
-                    //TODO did this trigger ?
-                    console.log("Err that should not be trigger");
-                    reject(errObj);
-                });
+
+                async.parallelLimit(promiseQ, 3,
+                    function (err, results) {
+                        resolve(results);
+                    });
+
+                // Promise.all(promiseQ).then(results => {
+                //     resolve(results);
+                // }).catch(errObj => {
+                //     //TODO did this trigger ?
+                //     console.log("Err that should not be trigger");
+                //     reject(errObj);
+                // });
             }).catch(errObj => {
                 //TODO did this trigger ?
                 console.log("Err that should not be trigger");

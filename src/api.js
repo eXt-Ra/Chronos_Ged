@@ -1,4 +1,4 @@
-import {currentSuivi} from "./organisms/suiviTreatment";
+import {currentSuivi} from "./organisms/watcher";
 import SuiviSchema from './Schema/SuiviSchema'
 import ErrorSchema from './Schema/ErrorSchema'
 import SocieteSchema from './Schema/SocieteSchema'

@@ -2,7 +2,7 @@ import mkdirp from "mkdirp";
 import ErrorSchema from '../Schema/ErrorSchema'
 import fs from 'fs'
 import _ from 'lodash'
-import {currentSuivi} from "../organisms/suiviTreatment";
+import {currentSuivi} from "../organisms/watcher";
 
 export default function setError(errObj) {
     return new Promise(((resolve, reject) => {
