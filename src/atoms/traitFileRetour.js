@@ -51,7 +51,7 @@ export default function traitFileRetour(position, remettant) {
                         });
                         break;
                     default:
-                        reject2(new GedError("File", `Erreur fichier non supporté`, position.documents[0].archiveSource, document.archiveSource, "", position.documents[0].codeEdi, 3, false));
+                        reject2(new GedError("104", `Erreur fichier non supporté`, "unknown", document.archiveSource, "", position.documents[0].codeEdi, 3, false));
                         return;
                 }
             }))
@@ -112,7 +112,7 @@ export default function traitFileRetour(position, remettant) {
                         });
                         break;
                     default:
-                        reject2(new GedError("File", `Erreur fichier non supporté`, position.documents[0].archiveSource, position.documents[0].archiveSource, "", position.documents[0].codeEdi, 3, false));
+                        reject2(new GedError("104", `Erreur fichier non supporté`, "unknown", position.documents[0].archiveSource, "", position.documents[0].codeEdi, 3, false));
                         return;
                 }
             }))
@@ -211,7 +211,7 @@ export default function traitFileRetour(position, remettant) {
                                             newFilePath),
                                         err => {
                                             if (err) {
-                                                return callback(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
+                                                return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
                                             }
                                             console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
                                             callback(null, newFilePath);
@@ -225,7 +225,7 @@ export default function traitFileRetour(position, remettant) {
                                         newFilePath),
                                     err => {
                                         if (err) {
-                                            return callback(new GedError("Copy Retour", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
+                                            return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
                                         }
                                         console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
                                         callback(null, newFilePath);
@@ -241,7 +241,6 @@ export default function traitFileRetour(position, remettant) {
                             console.log(errObj);
                             // setError(errObj)
                         } else {
-                            console.log("finish retour");
                             resolve(results);
                         }
                     });

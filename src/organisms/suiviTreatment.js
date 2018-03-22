@@ -76,6 +76,8 @@ const changeStatus = function changeStatus(id, status) {
                         resolve();
                     }
                 });
+        }else{
+            console.log(`Can't find currentSuivi to update status to ${status} for ${id}`);
         }
 
     }).catch(err => {
@@ -87,6 +89,8 @@ const changeProgress = function changeProgress(id, progress) {
     return new Promise((resolve, reject) => {
         if (findSuivi(id) > -1) {
             currentSuivi[findSuivi(id)].progress = progress;
+        }else{
+            console.log(`Can't find currentSuivi to update progress to ${progress} for ${id}`);
         }
         resolve();
     }).catch(err => {

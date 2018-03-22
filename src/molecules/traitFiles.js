@@ -24,12 +24,12 @@ export default function traitFiles(documents) {
                         promiseQ.push(traitTif(documents));
                         break;
                     default:
-                        reject(new GedError("File", `Erreur fichier non supporté`, documents[0].archiveSource, documents[0].archiveSource, "", documents[0].codeEdi, 3, true));
+                        reject(new GedError("104", `Erreur fichier non supporté`, documents[0].archiveSource, documents[0].archiveSource, "", documents[0].codeEdi, 3, true));
                         return;
                 }
                 end("barcode");
             }).catch(err => {
-                reject(new GedError("File", `Erreur lors du test de type de fichier`, documents[0].archiveSource, documents[0].archiveSource, err, documents[0].codeEdi, 3, true));
+                reject(new GedError("103", `Erreur lors du test de type de fichier`, documents[0].archiveSource, documents[0].archiveSource, err, documents[0].codeEdi, 3, true));
             });
         }
 
@@ -43,12 +43,12 @@ export default function traitFiles(documents) {
                         promiseQ.push(traitJpgFileName(documents));
                         break;
                     default:
-                        reject(new GedError("File", `Erreur fichier non supporté`, documents[0].archiveSource, documents[0].archiveSource, "", documents[0].codeEdi, 3, true));
+                        reject(new GedError("104", `Erreur fichier non supporté`, documents[0].archiveSource, documents[0].archiveSource, "", documents[0].codeEdi, 3, true));
                         return;
                 }
                 end("filename");
             }).catch(err => {
-                reject(new GedError("File", `Erreur lors du test de type de fichier`, documents[0].archiveSource, documents[0].archiveSource, err, documents[0].codeEdi, 3, true));
+                reject(new GedError("103", `Erreur lors du test de type de fichier`, documents[0].archiveSource, documents[0].archiveSource, err, documents[0].codeEdi, 3, true));
             });
         }
 

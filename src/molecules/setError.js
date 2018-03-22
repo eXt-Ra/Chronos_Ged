@@ -24,16 +24,8 @@ export default function setError(errObj) {
             } else {
                 archiveLocation = "Z:\\";
             }
-            if (errObj.source !== "unknown"){
+            if (errObj.source !== "unknown" || errObj.source.indexOf("archive") === -1) {
                 mkdirp(`${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`, (err) => {
-                    // fs.rename(`${path}${_.endsWith(errObj.source, '.zip') === true ? `${archiveLocation}reception/${errObj.codeEdi}/descente` : `output/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`}/${errObj.source}`, `${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}/${errObj.source}`, function (err) {
-                    //     if (err) {
-                    //         reject(err);
-                    //         return;
-                    //     }
-                    //     resolve();
-                    // });
-
                     const is = fs.createReadStream(`${path}${_.endsWith(errObj.source, '.zip') === true ? `${archiveLocation}reception/${errObj.codeEdi}/descente` : `output/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`}/${errObj.source}`),
                         os = fs.createWriteStream(`${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}/${errObj.source}`);
 
@@ -57,7 +49,7 @@ export default function setError(errObj) {
                 });
             }
 
-            if (errObj.stopProcess){
+            if (errObj.stopProcess) {
                 //kill suivi
                 currentSuivi.splice(currentSuivi.indexOf(x => x.id === `${errObj.codeEdi}_${errObj.sourceArchive.slice(0, -4)}`), 1);
             }

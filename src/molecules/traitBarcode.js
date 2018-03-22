@@ -59,7 +59,7 @@ export default function traitBarcode(documents) {
                         //not position to attach to
                         //aie
                         //reject("no position to attach to")
-                        setError(new GedError("Barcode", `pas de position en amont de ${ document.fileName}`, document.fileName, document.archiveSource, "", document.codeEdi, 2, false));
+                        setError(new GedError("301", `pas de position en amont de ${ document.fileName}`, document.fileName, document.archiveSource, "", document.codeEdi, 2, false));
                     }
                 }
 
@@ -67,19 +67,19 @@ export default function traitBarcode(documents) {
                 if (document.barecode === "noBarcode") {
                     //document sans barcode
                     if (isLastDocError) {
-                        setError(new GedError("Barcode", `document en amont de ${ document.fileName} was in error`, document.fileName, document.archiveSource, "", document.codeEdi, 2, false));
+                        setError(new GedError("302", `document en amont de ${ document.fileName} was in error`, document.fileName, document.archiveSource, "", document.codeEdi, 2, false));
                     } else {
                         if (index !== 0) {
                             if (positions.length > 0) {
                                 positions[positions.length - 1].documents.push(document);
                             } else {
                                 //reject("no position to attach to")
-                                setError(new GedError("Barcode", `pas de position en amont de ${ document.fileName}`, document.fileName, document.archiveSource, "", document.codeEdi, 2, false));
+                                setError(new GedError("301", `pas de position en amont de ${ document.fileName}`, document.fileName, document.archiveSource, "", document.codeEdi, 2, false));
                             }
 
                         } else {
                             //reject("first document noBarcode")
-                            setError(new GedError("Barcode", `first document nobarcode ${ document.fileName}`, document.fileName, document.archiveSource, "", document.codeEdi, 2, false));
+                            setError(new GedError("303", `first document nobarcode ${ document.fileName}`, document.fileName, document.archiveSource, "", document.codeEdi, 2, false));
                         }
                     }
                 } else if (document.barecode === "Error") {
@@ -102,11 +102,11 @@ export default function traitBarcode(documents) {
                             positionsFilter.push(position);
                             resolve();
                         } else {
-                            reject(new GedError("DB", `Societe introuvable pour le codeEdi ${data[0]}`, position.archiveSource, position.archiveSource, `Societe introuvable pour le codeEdi ${data[0]}`, position.codeEdi, 1, false));
+                            reject(new GedError("200", `Societe introuvable pour le codeEdi ${data[0]}`, position.archiveSource, position.archiveSource, `Societe introuvable pour le codeEdi ${data[0]}`, position.codeEdi, 1, false));
                         }
                     }).catch(err => {
                         if (err) {
-                            reject(new GedError("DB", `Erreur lors de l'acces MongoDB pour la recherche de societe ${data[0]}`, position.archiveSource, position.archiveSource, err, position.codeEdi, 1, false));
+                            reject(new GedError("201", `Erreur lors de l'acces MongoDB pour la recherche de societe ${data[0]}`, position.archiveSource, position.archiveSource, err, position.codeEdi, 1, false));
                         }
                     });
 

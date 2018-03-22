@@ -22,7 +22,7 @@ export default function mergePdf(documents, numEquinoxe) {
 
         exec(`pdftk ${inputPdf} cat output ${archiveLocation}${path.join(documents[0].currentFileLocation, `${numEquinoxe}_cat.pdf`)}`, (error, stdout, stderr) => {
             if (error) {
-                reject(new GedError("mergePdf", `Error on pdftk cmd de ${numEquinoxe}`, documents[0].fileName, documents[0].archiveSource, error, documents[0].codeEdi, 2, false));
+                reject(new GedError("112", `Error on pdftk cmd de ${numEquinoxe}`, "unknown", documents[0].archiveSource, error, documents[0].codeEdi, 2, false));
             }
             resolve([`${numEquinoxe}_cat.pdf`]);
         })

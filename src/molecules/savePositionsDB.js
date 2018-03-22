@@ -12,7 +12,7 @@ export default function (positions) {
                 if (positionInMongo == null) {
                     new PositionMongo(position.toSchema()).save((err) => {
                         if (err) {
-                            reject(new GedError("DB", `Insert DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                            reject(new GedError("202", `Insert DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
                         } else {
                             resolve()
                         }
@@ -22,14 +22,14 @@ export default function (positions) {
                     positionInMongo.docs = positionInMongo.docs.concat(position.documents);
                     positionInMongo.save((err) => {
                         if (err) {
-                            reject(new GedError("DB", `Update DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                            reject(new GedError("203", `Update DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
                         } else {
                             resolve()
                         }
                     });
                 }
             }).catch(err => {
-                reject(new GedError("DB", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                reject(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
             });
         }).catch(errObj => {
             setError(errObj);

@@ -33,17 +33,18 @@ export default function archiveFiles(positions) {
                                 is.on('end', function () {
                                     fs.unlink(document.filePath, err => {
                                         if (err) {
-                                            throw err;
+                                            setError(new GedError("110", `Delete du fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                                         } else {
                                             resolve();
                                         }
                                     });
                                 });
                                 is.on('error', function (err) {
-                                    throw err;
+                                    setError(new GedError("108", `Stream vers le fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                                 });
                                 os.on('error', function (err) {
-                                    throw err;
+                                    setError(new GedError("109", `Stream vers la destination source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+
                                 });
 
                             }).catch(errObj => {
@@ -70,10 +71,10 @@ export default function archiveFiles(positions) {
                                     });
                                 });
                                 is.on('error', function (err) {
-                                    throw err;
+                                    setError(new GedError("108", `Stream vers le fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                                 });
                                 os.on('error', function (err) {
-                                    throw err;
+                                    setError(new GedError("109", `Stream vers la destination source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                                 });
                             });
 
@@ -94,17 +95,17 @@ export default function archiveFiles(positions) {
                             is.on('end', function () {
                                 fs.unlink(path.join(`${archiveLocation}reception`, positions[0].codeEdi, "descente", positions[0].archiveSource), err => {
                                     if (err) {
-                                        throw err;
+                                        setError(new GedError("110", `Delete du fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                                     } else {
                                         resolve();
                                     }
                                 });
                             });
                             is.on('error', function (err) {
-                                throw err;
+                                setError(new GedError("108", `Stream vers le fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                             });
                             os.on('error', function (err) {
-                                throw err;
+                                setError(new GedError("109", `Stream vers la destination source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                             });
                         });
 
@@ -117,7 +118,7 @@ export default function archiveFiles(positions) {
                 new Promise((resolve, reject) => {
                     ncp(path.join(positions[0].documents[0].currentFileLocation, "lds"), `${archiveLocation}lds`, function (err) {
                         if (err) {
-                            reject(new GedError("Archive", `Déplacement des LDS échoué de ${positions[0].documents[0].currentFileLocation}/lds`, positions[0].archiveSource, positions[0].archiveSource, err, positions[0].codeEdi, 2, false));
+                            reject(new GedError("107", `Déplacement des LDS échoué de ${positions[0].documents[0].currentFileLocation}/lds`, positions[0].archiveSource, positions[0].archiveSource, err, positions[0].codeEdi, 2, false));
                         }
                         resolve();
                     })

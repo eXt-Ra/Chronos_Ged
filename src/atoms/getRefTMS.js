@@ -9,12 +9,12 @@ export default function getRefTMS(position) {
             } else {
                 connection.query(`SELECT s2.PROPRIETE FROM search_doc s1 INNER JOIN search_doc s2 ON s1.NUM_DOC = s2.NUM_DOC WHERE s1.PROPRIETE = '${position.numEquinoxe}' AND (s2.NUM_CHAMPS=2 OR s2.NUM_CHAMPS=1) AND s2.PROPRIETE <> ''`, function (err, lines) {
                     if (err) {
-                        reject(new GedError("DATA EQUINOXE", `erreur au moment de requete ${position.numEquinoxe}`, position.archiveSource, position.archiveSource, err, position.codeEdi, 2, false));
+                        reject(new GedError("205", `erreur au moment de requete ${position.numEquinoxe} pour la REFTMS`, position.archiveSource, position.archiveSource, err, position.codeEdi, 2, false));
                     } else {
                         if (lines.length > 0) {
                             resolve(lines[0].PROPRIETE);
                         } else {
-                            reject(new GedError("DATA EQUINOXE", `no data found for ${position.numEquinoxe}`, position.archiveSource, position.archiveSource, `no data found for ${position.numEquinoxe}`, position.codeEdi, 2, false));
+                            reject(new GedError("205", `no data found for ${position.numEquinoxe} pour la REFTMS`, position.archiveSource, position.archiveSource, `no data found for ${position.numEquinoxe}`, position.codeEdi, 2, false));
                         }
                     }
                     connection.release();

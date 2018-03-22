@@ -14,7 +14,7 @@ export default function mergeJpg(documents, numEquinoxe) {
         gm().append(arrInputJpg)
             .write(path.join(documents[0].currentFileLocation,`${numEquinoxe}_cat.jpg`), function (err) {
                 if (err) {
-                    reject(new GedError("mergeJpg", `Error on gm cmd de ${numEquinoxe}`, documents[0].fileName, documents[0].archiveSource, err, documents[0].codeEdi, 2, false));
+                    reject(new GedError("113", `Error on gm cmd de ${numEquinoxe}`, "unknown", documents[0].archiveSource, err, documents[0].codeEdi, 2, false));
                 }else{
                     resolve([`${numEquinoxe}_cat.jpg`]);
                 }

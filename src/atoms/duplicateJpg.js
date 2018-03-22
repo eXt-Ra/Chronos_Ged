@@ -8,7 +8,7 @@ export default function duplicateJpg(document) {
         mkdirp(`${document.currentFileLocation}/img`, () => {
             fs.readdir(`${document.currentFileLocation}/img`, function (err, files) {
                 if (err) {
-                    reject(new GedError("DuplicateJpg", `Erreur lors du fs.reader de ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+                    reject(new GedError("114", `Erreur lors du fs.reader de ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                     return;
                 }
                 const currentFileInImg = files;
@@ -17,7 +17,7 @@ export default function duplicateJpg(document) {
                 stream.on('close', () => {
                     fs.readdir(`${document.currentFileLocation}/img`, function (err, items) {
                         if (err) {
-                            reject(new GedError("DuplicateJpg", `Erreur lors du fs.reader de ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+                            reject(new GedError("114", `Erreur lors du fs.reader de ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                             return;
                         }
                         _.difference(items, currentFileInImg).forEach(newImg => {
