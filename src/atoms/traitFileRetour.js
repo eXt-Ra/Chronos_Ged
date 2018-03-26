@@ -24,6 +24,12 @@ export default function traitFileRetour(position, remettant) {
         } else {
             conf = position.remettant.retour;
         }
+        let archiveLocation;
+        if (process.env.NODE_ENV === "development") {
+            archiveLocation = "";
+        } else {
+            archiveLocation = "Z:\\";
+        }
 
         function merge(position, type) {
             return new Promise(((resolve2, reject2) => {
@@ -118,12 +124,33 @@ export default function traitFileRetour(position, remettant) {
             }))
         }
 
-        let archiveLocation;
-        if (process.env.NODE_ENV === "development") {
-            archiveLocation = "";
-        } else {
-            archiveLocation = "Z:\\";
+        function duplicateFile(position) {
+            return new Promise((resolve2, reject2) => {
+                const promiseQ = [];
+                position.documents.forEach((document, index) => {
+                    promiseQ.push(
+                        new Promise(resolve3 => {
+                            fs.copy(
+                                path.join(`${archiveLocation}`, document.currentFileLocation, document.fileName),
+                                path.join(`${archiveLocation}`, document.currentFileLocation, `${index}${document.fileNameNoExt}_copy${document.fileName.substr(document.fileName.length - 4)}`),
+                                err => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                    resolve3(`${index}${document.fileNameNoExt}_copy${document.fileName.substr(document.fileName.length - 4)}`);
+                                })
+                        })
+                    )
+                });
+                Promise.all(promiseQ).then(result =>{
+                    console.log(result);
+                    resolve2(result);
+                })
+            })
+
         }
+
+
         fileTypeCheck(path.join(archiveLocation, position.documents[0].filePath)).then(type => {
             if (conf.multi) {
                 //merge des fichiers
@@ -133,7 +160,11 @@ export default function traitFileRetour(position, remettant) {
                     return convertoRetourFiletype(position, conf.fileType, true)
                 }
             } else {
-                return convertoRetourFiletype(position, conf.fileType, false);
+                if (conf.fileType === type) {
+                    return duplicateFile(position);
+                } else {
+                    return convertoRetourFiletype(position, conf.fileType, false)
+                }
             }
         }).then(files => {
             const promiseQ = [];
@@ -211,10 +242,10 @@ export default function traitFileRetour(position, remettant) {
                                             newFilePath),
                                         err => {
                                             if (err) {
-                                                return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
+                                                return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false));
                                             }
                                             console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
-                                            callback(null, newFilePath);
+                                            callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
                                         });
                                 });
                             } else {
@@ -225,10 +256,10 @@ export default function traitFileRetour(position, remettant) {
                                         newFilePath),
                                     err => {
                                         if (err) {
-                                            return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, path.join(position.documents[0].currentFileLocation, file), position.documents[0].archiveSource, err, position.codeEdi, 3, false));
+                                            return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false));
                                         }
                                         console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
-                                        callback(null, newFilePath);
+                                        callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
                                     });
                             }
                         }
@@ -238,8 +269,8 @@ export default function traitFileRetour(position, remettant) {
                 async.parallelLimit(promiseQ, 3,
                     function (errObj, results) {
                         if (errObj) {
-                            console.log(errObj);
-                            // setError(errObj)
+                            // console.log(errObj);
+                            setError(errObj)
                         } else {
                             resolve(results);
                         }

@@ -20,8 +20,7 @@ export default function readBarcode(documents) {
                 function error() {
                     throw new Error("Pas trouvée no prod")
                 }
-
-                doc.barecode = barecode ? barecode.codebarres : error()
+                doc.barecode =  barecode ? doc.barecode.concat(barecode.codebarres) : error();
             });
             resolve(documents);
         }).catch(errObj => {

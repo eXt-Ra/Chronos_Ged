@@ -3,6 +3,8 @@ import SuiviSchema from './Schema/SuiviSchema'
 import ErrorSchema from './Schema/ErrorSchema'
 import SocieteSchema from './Schema/SocieteSchema'
 import PositionSchema from './Schema/PositionSchema'
+import Position from './Class/Position'
+import Document from './Class/Document'
 import fs from 'fs';
 
 const express = require('express');
@@ -17,9 +19,11 @@ import * as path from "path";
 
 
 import React from 'react';
-import { renderToString } from 'react-dom/server';
+import {renderToString} from 'react-dom/server';
 import Page404 from "./View/404";
 import template from './View/template';
+import axios from "axios/index";
+import traitRetour from "./molecules/traitRetour";
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -48,13 +52,35 @@ app.get('/suivihistory', function (req, res) {
     })
 });
 app.get('/error', function (req, res) {
-    ErrorSchema.find({}, [], {
-        sort: {
-            dateError: -1 //Sort by Date Added DESC
+
+    return ErrorSchema.aggregate([
+        {
+            $group: {
+                _id: {source: '$sourceArchive', codeEdi: '$codeEdi'},
+                codeEdi: {$last: "$codeEdi"},
+                source: {$last: "$sourceArchive"},
+                nb: {$sum: 1},
+                lastError: {
+                    $last: {
+                        type: "$type",
+                        message: "$message"
+                    }
+                },
+                erreurs: {$push: "$$ROOT"}
+            },
+        }, {
+            $sort: {
+                "archives.dateError": -1
+            }
         }
-    }).then(resData => {
-        res.json(resData);
-    })
+    ], function (err, result) {
+        if (err) {
+            res.json(err);
+        } else {
+            res.json(result);
+        }
+    });
+
 });
 app.get('/societe', function (req, res) {
     SocieteSchema.find({}, [], {
@@ -95,6 +121,55 @@ app.post('/societe/retour', function (req, res) {
                 res.status(200).send("Done");
             }
         });
+});
+app.get('/retour/regen', (req, res) => {
+    PositionSchema.findOne({numEquinoxe: req.query.numEquinoxe})
+        .then(position => {
+            if (position != null) {
+                position.documents = position.docs;
+                const pos = new Position(position.numEquinoxe, position.codeEdi, position.societe, position.archiveSource);
+                pos.remettant = position.remettant;
+                pos.numeroDoc = position.numeroDoc;
+                position.docs.forEach(doc =>{
+                    const newDoc = new Document(doc.codeEdi, position.societe, doc.archiveSource, path.join(doc.currentFileLocation,doc.fileName));
+                    pos.documents.push(newDoc);
+                });
+                traitRetour([pos]).then(data => {
+                    res.send(data);
+                });
+            } else {
+                const appString = renderToString(<Page404/>);
+                res.send(template({
+                    body: appString,
+                    title: 'Page 404'
+                }))
+            }
+        })
+});
+app.get('/file', (req, res) => {
+    fs.readFile(path.join("error", req.query.codeEdi, req.query.folder, req.query.file), function (err, data) {
+        if (err) {
+            const appString = renderToString(<Page404/>);
+            res.send(template({
+                body: appString,
+                title: 'Page 404'
+            }))
+        } else {
+            res.contentType("application/pdf");
+            res.send(data);
+        }
+    });
+});
+app.get('/read', (req, res) => {
+    axios.post(`http://localhost:51265/api/inlite`, {
+        documents: [path.join("error", req.query.codeEdi, req.query.folder, req.query.file)],
+    }).then(result => {
+        console.log(result.data[0].PathName);
+        res.send(result.data);
+    }).catch(err => {
+        console.log(err);
+        res.send(err)
+    })
 });
 app.use('/dash', express.static('public'));
 
@@ -188,7 +263,7 @@ gedRouter.get('/:numeroequinoxe', function (req, res) {
                 }
             });
         } else {
-            const appString = renderToString(<Page404 />);
+            const appString = renderToString(<Page404/>);
 
             res.send(template({
                 body: appString,

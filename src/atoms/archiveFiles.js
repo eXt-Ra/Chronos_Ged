@@ -33,7 +33,8 @@ export default function archiveFiles(positions) {
                                 is.on('end', function () {
                                     fs.unlink(document.filePath, err => {
                                         if (err) {
-                                            setError(new GedError("110", `Delete du fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+                                            console.log(err);
+                                            //setError(new GedError("110", `Delete du fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                                         } else {
                                             resolve();
                                         }
@@ -95,7 +96,8 @@ export default function archiveFiles(positions) {
                             is.on('end', function () {
                                 fs.unlink(path.join(`${archiveLocation}reception`, positions[0].codeEdi, "descente", positions[0].archiveSource), err => {
                                     if (err) {
-                                        setError(new GedError("110", `Delete du fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+                                        console.log(err)
+                                        //setError(new GedError("110", `Delete du fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                                     } else {
                                         resolve();
                                     }
@@ -133,13 +135,26 @@ export default function archiveFiles(positions) {
                             document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
                         });
 
-                        PositionSchema.findOneAndUpdate(
-                            {numEquinoxe: position.numEquinoxe},
-                            {$set: {docs: position.docsToSchema}}, function (err) {
-                                if (err) {
-                                    console.log(err);
-                                }
-                            });
+                        // PositionSchema.findOneAndUpdate(
+                        //     {numEquinoxe: position.numEquinoxe},
+                        //     {$set: {docs: position.docsToSchema}}, function (err) {
+                        //         if (err) {
+                        //             console.log(err);
+                        //         }
+                        //     });
+
+                        PositionSchema.findOne({
+                            numEquinoxe: position.numEquinoxe
+                        }).then((positionInMongo) => {
+                            if (positionInMongo == null) {
+                                positionInMongo.docs.forEach(document => {
+                                    document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
+                                });
+                                positionInMongo.save();
+                            }
+                        }).catch(err => {
+                            reject(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                        });
                     });
 
                     resolve(positions);
@@ -149,14 +164,26 @@ export default function archiveFiles(positions) {
                             position.documents.forEach(document => {
                                 document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
                             });
-
-                            PositionSchema.findOneAndUpdate(
-                                {numEquinoxe: position.numEquinoxe},
-                                {$set: {docs: position.docsToSchema}}, function (err) {
-                                    if (err) {
-                                        console.log(err);
-                                    }
-                                });
+                            //
+                            // PositionSchema.findOneAndUpdate(
+                            //     {numEquinoxe: position.numEquinoxe},
+                            //     {$set: {docs: position.docsToSchema}}, function (err) {
+                            //         if (err) {
+                            //             console.log(err);
+                            //         }
+                            //     });
+                            PositionSchema.findOne({
+                                numEquinoxe: position.numEquinoxe
+                            }).then((positionInMongo) => {
+                                if (positionInMongo == null) {
+                                    positionInMongo.docs.forEach(document => {
+                                        document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
+                                    });
+                                    positionInMongo.save();
+                                }
+                            }).catch(err => {
+                                reject(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                            });
                         });
                         resolve(positions);
                     });

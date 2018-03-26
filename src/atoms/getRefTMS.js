@@ -2,12 +2,12 @@ import GedError from "../Class/GedError";
 import * as conn from "../conn";
 
 export default function getRefTMS(position) {
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         conn.pool.getConnection((err, connection) => {
             if (err) {
                 reject(err);
             } else {
-                connection.query(`SELECT s2.PROPRIETE FROM search_doc s1 INNER JOIN search_doc s2 ON s1.NUM_DOC = s2.NUM_DOC WHERE s1.PROPRIETE = '${position.numEquinoxe}' AND (s2.NUM_CHAMPS=2 OR s2.NUM_CHAMPS=1) AND s2.PROPRIETE <> ''`, function (err, lines) {
+                connection.query(`SELECT s2.PROPRIETE FROM search_doc s1 INNER JOIN search_doc s2 ON s1.NUM_DOC = s2.NUM_DOC WHERE s1.PROPRIETE = '${position.numEquinoxe}' AND (s2.NUM_CHAMPS=2) AND s2.PROPRIETE <> ''`, function (err, lines) {
                     if (err) {
                         reject(new GedError("205", `erreur au moment de requete ${position.numEquinoxe} pour la REFTMS`, position.archiveSource, position.archiveSource, err, position.codeEdi, 2, false));
                     } else {

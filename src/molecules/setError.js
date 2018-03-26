@@ -34,17 +34,17 @@ export default function setError(errObj) {
                     is.on('end', function () {
                         fs.unlink(`${path}${_.endsWith(errObj.source, '.zip') === true ? `${archiveLocation}reception/${errObj.codeEdi}/descente` : `output/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`}/${errObj.source}`, err => {
                             if (err) {
-                                throw err;
+                                console.log(err);
                             } else {
                                 resolve();
                             }
                         });
                     });
                     is.on('error', function (err) {
-                        throw err;
+                        console.log(err);
                     });
                     os.on('error', function (err) {
-                        throw err;
+                        console.log(err);
                     });
                 });
             }

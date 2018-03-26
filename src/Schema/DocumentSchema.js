@@ -10,12 +10,14 @@ const documentSchema = new Schema(
         archiveSource: {type: String, required: true},
         fileName: {type: String, required: true},
         currentFileLocation: {type: String, required: true}
-    },
-    {usePushEach: true});
+    });
 
 documentSchema.pre("save", function (next) {
     next();
 });
 
 const DocumentMongo = mongoose.model("Document", documentSchema);
-module.exports = DocumentMongo;
+module.exports = {
+    DocumentMongo,
+    documentSchema
+};

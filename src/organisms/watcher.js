@@ -68,11 +68,11 @@ watcher
     .on('unlink', filePath => console.log(`File ${filePath} has been removed`));
 
 watcher.on('add', filePath => {
-    console.log(`File ${filePath} has been added`);
     const codeEdi = filePath.split(path.sep)[filePath.split(path.sep).length - 3];
     const zipName = filePath.split(path.sep)[filePath.split(path.sep).length - 1].substring(0, filePath.split(path.sep)[filePath.split(path.sep).length - 1].length - 4);
     const id = `${codeEdi}_${zipName}`;
     if (_.endsWith(filePath, '.zip')) {
+        console.log(`File ${filePath} has been added`);
         addSuivi(new Suivi(codeEdi, filePath.split(path.sep)[filePath.split(path.sep).length - 1]));
         changeStatus(id, "Unzipper");
         unZip(filePath)
@@ -87,13 +87,10 @@ watcher.on('add', filePath => {
             })
             .then(documents => {
                 if (documents[1].length > 0) {
-                    if (documents[0] === "barcode") {
-                        changeStatus(id, "ReadBarcodes");
-                        changeProgress(id, 10);
-                        return readBarcode(documents[1]);
-                    } else {
-                        return Promise.resolve(documents[1]);
-                    }
+                    changeStatus(id, "ReadBarcodes");
+                    changeProgress(id, 10);
+                    return readBarcode(documents[1]);
+
                 } else {
                     changeStatus(id, "Error TraitFiles");
                     return Promise.reject(new GedError("Stop", `Stop after traiFiles pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after traiFiles", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
@@ -177,6 +174,7 @@ function startTreatmentCalva() {
         saveGedDownloadDB(lines).then(imagesToDl => {
             lines = [];
             downloadImages(imagesToDl).then(documents => {
+                //TODO status dl
                 return traitBarcode(documents);
             }).then(positions => {
                 return savePositionsDB(positions);
@@ -186,6 +184,8 @@ function startTreatmentCalva() {
                 return archiveFiles(positions);
             }).then(positions => {
                 return traitRetour(positions);
+            }).then(() => {
+                //TODO status terminé delete de la bdd
             })
         })
     }, 5000)

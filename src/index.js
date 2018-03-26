@@ -4,6 +4,8 @@ import './api'
 require("./connmongo")();
 // Use native promises
 import mongoose from "mongoose";
+import PositionMongo from "./Schema/PositionSchema";
+import GedError from "./Class/GedError";
 
 mongoose.Promise = Promise;
 
@@ -59,3 +61,65 @@ mongoose.Promise = Promise;
 //         resolve()
 //     }
 // });
+
+const arr1 =  [{
+    barcode: ['8183014'],
+    codeEdi: 'FUCK',
+    dateTreatment: '2018-02-23T17:01:46+01:00',
+    archiveSource: 'fournie31_201802151551.zip',
+    fileName: '8183014-SCAN_1.pdf',
+    currentFileLocation: 'output/FOURTOU/fournie31_201802151551'
+},{
+    barcode: ['8183014'],
+    codeEdi: 'FUCK',
+    dateTreatment: '2018-02-23T17:01:46+01:00',
+    archiveSource: 'fournie31_201802151551.zip',
+    fileName: '8183014-SCAN_1.pdf',
+    currentFileLocation: 'output/FOURTOU/fournie31_201802151551'
+},{
+    barcode: ['8183014'],
+    codeEdi: 'FUCK',
+    dateTreatment: '2018-02-23T17:01:46+01:00',
+    archiveSource: 'fournie31_201802151551.zip',
+    fileName: '8183014-SCAN_1.pdf',
+    currentFileLocation: 'output/FOURTOU/fournie31_201802151551'
+}];
+
+const arr2 =  [{
+    barcode: ['8183014'],
+    codeEdi: 'FUCK',
+    dateTreatment: '2018-02-23T17:01:46+01:00',
+    archiveSource: 'fournie31_201802151551.zip',
+    fileName: '8183014-SCAN_1.pdf',
+    currentFileLocation: 'output/FOURTOU/fournie31_201802151551'
+},{
+    barcode: ['8183014'],
+    codeEdi: 'FUCK',
+    dateTreatment: '2018-02-23T17:01:46+01:00',
+    archiveSource: 'fournie31_201802151551.zip',
+    fileName: '8183014-SCAN_1.pdf',
+    currentFileLocation: 'output/FOURTOU/fournie31_201802151551'
+},{
+    barcode: ['8183014'],
+    codeEdi: 'FUCK',
+    dateTreatment: '2018-02-23T17:01:46+01:00',
+    archiveSource: 'fournie31_201802151551.zip',
+    fileName: '8183014-SCAN_1.pdf',
+    currentFileLocation: 'output/FOURTOU/fournie31_201802151551'
+}];
+
+// PositionMongo.update(
+//     {numEquinoxe: '8215296'},
+//     {
+//         $set: {
+//             docs: arr1.concat(arr2)
+//         }
+//     },
+//     {safe: true, upsert: true},
+//     function (err, model) {
+//         if (err) {
+//             console.log(err);
+//         }
+//         console.log(model);
+//     }
+// );

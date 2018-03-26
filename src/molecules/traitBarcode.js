@@ -2,6 +2,7 @@ import Position from '../Class/Position'
 import _ from "lodash"
 import getDataWithNumEquinoxe from './../atoms/getDataWithBarcode'
 import isSocieteNEiF from './../atoms/isSocieteNEiF'
+import traitGeodis from './../atoms/traitGeodis'
 import GedError from "../Class/GedError";
 import setError from "./setError";
 import Document from "../Class/Document";
@@ -23,15 +24,29 @@ export default function traitBarcode(documents) {
             return output;
         }
 
+        function isGeodis(barecode) {
+            barecode.forEach(item => {
+                if (item.length === 20 && item.startsWith("9")) {
+                    return true;
+                }
+            });
+            return false;
+        }
+
         documents.forEach((document, index) => {
             if (document.barecode !== "noBarcode" && document.barecode !== "Error") {
                 //document barcode not equal noBarcode
                 const isNEiF = isSocieteNEiF(document.societe);
+
+                if (isGeodis(document.barecode)) {
+                    traitGeodis(document);
+                }
+
                 if (isPole(document.barecode) !== "" || isNEiF) {
                     isLastDocError = false;
                     //barcode is numEquinoxe
                     if (positions.length !== 0) {
-                        if (positions[positions.length - 1].numEquinoxe === _.trim(_.replace(document.barecode, 'POLE', ''))) {
+                        if (positions[positions.length - 1].numEquinoxe === _.trim(_.replace(isPole(document.barecode), 'POLE', ''))) {
                             //ajout du doc à la Position
                             positions[positions.length - 1].documents.push(document);
                         } else {
