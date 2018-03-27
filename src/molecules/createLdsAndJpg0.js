@@ -34,12 +34,12 @@ export default function createLdsAndJpg0(positions) {
                         mkdirp(path.join(document.currentFileLocation, "lds"), () => {
                             fs.writeFile(path.join(document.currentFileLocation, "lds", `${document.fileNameNoExt}.lds`), dataLds, (err) => {
                                 if (err) {
-                                    callback(new GedError("105", `Creation LDS échoué ${ document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
-                                }else{
+                                    callback(new GedError("105", `Creation LDS échoué ${ document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false, dataLds));
+                                } else {
                                     exec(`gm convert -density 400 "${document.filePath}" -resize 25% -quality 92 "${path.join(document.currentFileLocation, "lds", `${document.fileNameNoExt}.jpg`)}"`, (err) => {
                                         if (err) {
-                                            callback(new GedError("105", `Creation du jp0 échoué ${ document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
-                                        }else{
+                                            callback(new GedError("105", `Creation du jp0 échoué ${ document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false, dataLds));
+                                        } else {
                                             fs.rename(path.join(document.currentFileLocation, "lds", `${document.fileNameNoExt}.jpg`), path.join(document.currentFileLocation, "lds", `${document.fileNameNoExt}.jpg0`), function (err) {
                                                 if (err) {
                                                     callback(new GedError("106", `Rename du jp0 échoué ${ document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));

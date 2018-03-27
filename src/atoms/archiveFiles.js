@@ -120,7 +120,7 @@ export default function archiveFiles(positions) {
                 new Promise((resolve, reject) => {
                     ncp(path.join(positions[0].documents[0].currentFileLocation, "lds"), `${archiveLocation}lds`, function (err) {
                         if (err) {
-                            reject(new GedError("107", `Déplacement des LDS échoué de ${positions[0].documents[0].currentFileLocation}/lds`, positions[0].archiveSource, positions[0].archiveSource, err, positions[0].codeEdi, 2, false));
+                            reject(new GedError("107", `Déplacement des LDS échoué de ${positions[0].documents[0].currentFileLocation}/lds`, positions[0].archiveSource, positions[0].archiveSource, err, positions[0].codeEdi, 2, false, positions));
                         }
                         resolve();
                     })
@@ -164,7 +164,7 @@ export default function archiveFiles(positions) {
                             position.documents.forEach(document => {
                                 document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
                             });
-                            //
+
                             // PositionSchema.findOneAndUpdate(
                             //     {numEquinoxe: position.numEquinoxe},
                             //     {$set: {docs: position.docsToSchema}}, function (err) {

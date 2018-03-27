@@ -267,7 +267,7 @@ gedRouter.get('/:numeroequinoxe', function (req, res) {
 
             res.send(template({
                 body: appString,
-                title: 'Hello World from the server'
+                title: '404'
             }))
         }
     })

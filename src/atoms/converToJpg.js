@@ -19,7 +19,7 @@ export default function converToJpg(documents, numEquinoxe) {
                 exec(`gm convert -density 400 "${archiveLocation}${path.join(document.currentFileLocation, document.fileName)}" -resize 25% -quality 92 "${path.join(archiveLocation, documents[0].currentFileLocation, `${index}_${document.fileNameNoExt}_cv.jpg`)}"`,
                     err => {
                         if (err) {
-                            reject(new GedError("113", `Error on gm cmd de ${numEquinoxe}`, "unknown", documents[0].archiveSource, err, documents[0].codeEdi, 2, false));
+                            reject(new GedError("113", `Error on gm cmd de ${numEquinoxe}`, "unknown", documents[0].archiveSource, err, documents[0].codeEdi, 2, false,numEquinoxe));
                         } else {
                             document.fileName = `${index}_${document.fileNameNoExt}_cv.jpg`;
                             resolve2(document);

@@ -29,7 +29,7 @@ export default function traitFiles(documents) {
                 }
                 end("barcode");
             }).catch(err => {
-                reject(new GedError("103", `Erreur lors du test de type de fichier`, documents[0].archiveSource, documents[0].archiveSource, err, documents[0].codeEdi, 3, true));
+                reject(new GedError("103", `Erreur lors du test de type de fichier`, documents[0].fileName, documents[0].archiveSource, err, documents[0].codeEdi, 3, true));
             });
         }
 
@@ -48,7 +48,7 @@ export default function traitFiles(documents) {
                 }
                 end("filename");
             }).catch(err => {
-                reject(new GedError("103", `Erreur lors du test de type de fichier`, documents[0].archiveSource, documents[0].archiveSource, err, documents[0].codeEdi, 3, true));
+                reject(new GedError("103", `Erreur lors du test de type de fichier`, documents[0].fileName, documents[0].archiveSource, err, documents[0].codeEdi, 3, true));
             });
         }
 

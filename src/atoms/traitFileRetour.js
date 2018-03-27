@@ -142,7 +142,7 @@ export default function traitFileRetour(position, remettant) {
                         })
                     )
                 });
-                Promise.all(promiseQ).then(result =>{
+                Promise.all(promiseQ).then(result => {
                     console.log(result);
                     resolve2(result);
                 })
@@ -242,7 +242,7 @@ export default function traitFileRetour(position, remettant) {
                                             newFilePath),
                                         err => {
                                             if (err) {
-                                                return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false));
+                                                return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
                                             }
                                             console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
                                             callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
@@ -256,7 +256,7 @@ export default function traitFileRetour(position, remettant) {
                                         newFilePath),
                                     err => {
                                         if (err) {
-                                            return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false));
+                                            return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
                                         }
                                         console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
                                         callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
@@ -284,6 +284,8 @@ export default function traitFileRetour(position, remettant) {
             });
         }).catch(err => {
             console.log(err);
+            setError(new GedError("104", `Erreur survenue lors des traitements`, "unknown", position.documents[0].archiveSource, "", position.documents[0].codeEdi, 3, false))
+            resolve();
         });
 
     })

@@ -72,6 +72,10 @@ export default class GedError {
         this._type = value;
     }
 
+    get args() {
+        return this._args;
+    }
+
     get toSchema() {
         return {
             type : this._type,
@@ -86,7 +90,7 @@ export default class GedError {
             status: this._status
         };
     }
-    constructor(type, message, source, sourceArchive, err, codeEdi, criticality, stopProcess) {
+    constructor(type, message, source, sourceArchive, err, codeEdi, criticality, stopProcess, ...args) {
         this._type = type;
         this._message = message;
         this._source = source;
@@ -97,5 +101,6 @@ export default class GedError {
         this._stopProcess = stopProcess;
         this._dateError = moment().format();
         this._status = "Open";
+        this._args = args;
     }
 }
