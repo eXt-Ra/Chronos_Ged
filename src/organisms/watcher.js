@@ -28,14 +28,20 @@ let watcher;
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "development") {
     watcher = chokidar.watch('reception', {
-        awaitWriteFinish: true,
+        awaitWriteFinish: {
+            stabilityThreshold: 2000,
+            pollInterval: 100
+        },
         ignored: [
             'reception/CALVACOM'
         ]
     });
 } else {
     watcher = chokidar.watch('Z:\\reception', {
-        awaitWriteFinish: true,
+        awaitWriteFinish: {
+            stabilityThreshold: 2000,
+            pollInterval: 100
+        },
         ignored: [
             'reception/CALVACOM'
         ]
@@ -45,11 +51,17 @@ if (process.env.NODE_ENV === "development") {
 let watcherCalva;
 if (process.env.NODE_ENV === "development") {
     watcherCalva = chokidar.watch('reception/CALVACOM', {
-        awaitWriteFinish: true
+        awaitWriteFinish: {
+            stabilityThreshold: 2000,
+            pollInterval: 100
+        },
     });
 } else {
     watcherCalva = chokidar.watch('Z:\\reception/CALVACOM', {
-        awaitWriteFinish: true
+        awaitWriteFinish: {
+            stabilityThreshold: 2000,
+            pollInterval: 100
+        },
     });
 }
 

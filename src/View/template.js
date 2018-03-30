@@ -1,10 +1,12 @@
-export default ({ body, title }) => {
+export default ({ body, title, initialState }) => {
     return `
     <!DOCTYPE html>
     <html>
       <head>
+        <script>window.__APP_INITIAL_STATE__ = ${initialState}</script>
         <title>${title}</title>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" /> 
+        <link rel="stylesheet" href="/assets/index.css" />
       </head>
       
       <body>

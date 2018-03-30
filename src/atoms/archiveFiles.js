@@ -150,6 +150,7 @@ export default function archiveFiles(positions) {
                                 positionInMongo.docs.forEach(document => {
                                     document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
                                 });
+                                position.markModified('docs');
                                 positionInMongo.save();
                             }
                         }).catch(err => {
@@ -172,6 +173,7 @@ export default function archiveFiles(positions) {
                             //             console.log(err);
                             //         }
                             //     });
+
                             PositionSchema.findOne({
                                 numEquinoxe: position.numEquinoxe
                             }).then((positionInMongo) => {
@@ -179,6 +181,7 @@ export default function archiveFiles(positions) {
                                     positionInMongo.docs.forEach(document => {
                                         document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
                                     });
+                                    position.markModified('docs');
                                     positionInMongo.save();
                                 }
                             }).catch(err => {

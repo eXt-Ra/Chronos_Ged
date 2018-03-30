@@ -38,13 +38,16 @@
     "ncp": "^2.0.0",
     "path": "^0.12.7",
     "pdf2json": "^1.1.7",
-    "react": "latest",
+    "rand-token": "^0.4.0",
+    "react": "^16.2.0",
+    "react-addons-css-transition-group": "^15.6.2",
     "react-dom": "^16.2.0",
     "react-transition-group": "^2.2.1",
     "reactstrap": "^4.8.0",
     "read-chunk": "^2.1.0",
     "rimraf": "^2.6.2",
-    "unzip": "^0.1.11"
+    "unzip": "^0.1.11",
+    "url-crypt": "^1.2.1"
   },
   "babel": {
     "presets": [

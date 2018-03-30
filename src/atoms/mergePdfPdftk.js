@@ -25,10 +25,10 @@ export default function mergePdf(documents, numEquinoxe, ...args) {
         const inputPdf = arrInputPdf.join(" ");
 
 
-        // exec(`pdftk ${inputPdf} cat output ${archiveLocation}${ !args[0] ? path.join(documents[0].currentFileLocation, `${numEquinoxe}_cat.pdf`) : path.join("temp", `${numEquinoxe}.pdf`)}`, (error, stdout, stderr) => {
-        exec(`gm convert ${inputPdf} ${archiveLocation}${ !args[0] ? path.join(documents[0].currentFileLocation, `${numEquinoxe}_cat.pdf`) : path.join("temp", `${numEquinoxe}.pdf`)}`, (error, stdout, stderr) => {
+        exec(`pdftk ${inputPdf} cat output ${archiveLocation}${ !args[0] ? path.join(documents[0].currentFileLocation, `${numEquinoxe}_cat.pdf`) : path.join("temp", `${numEquinoxe}.pdf`)}`, (error, stdout, stderr) => {
+        //exec(`gm convert ${inputPdf} ${archiveLocation}${ !args[0] ? path.join(documents[0].currentFileLocation, `${numEquinoxe}_cat.pdf`) : path.join("temp", `${numEquinoxe}.pdf`)}`, (error, stdout, stderr) => {
             if (error) {
-                reject(new GedError("113", `Error on gm cmd de ${numEquinoxe}`, "unknown", documents[0].archiveSource, error, documents[0].codeEdi, 2, false, numEquinoxe));
+                reject(new GedError("112", `Error on pdftk cmd de ${numEquinoxe}`, "unknown", documents[0].archiveSource, error, documents[0].codeEdi, 2, false, numEquinoxe));
             }
             resolve([`${!args[0] ? `${numEquinoxe}_cat.pdf` : `${numEquinoxe}.pdf`}`]);
         })
