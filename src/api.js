@@ -175,7 +175,7 @@ app.get('/file', (req, res) => {
     });
 });
 app.get('/read', (req, res) => {
-    axios.post(`http://localhost:51265/api/inlite`, {
+    axios.post(`http://localhost/inlite/api/inlite`, {
         documents: [path.join("error", req.query.codeEdi, req.query.folder, req.query.file)],
     }).then(result => {
         console.log(result.data[0].PathName);

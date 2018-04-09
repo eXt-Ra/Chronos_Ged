@@ -36,7 +36,7 @@ function findPoleBarcode(documents) {
         documents.forEach(doc => {
             postDocumentsFilepath.push(doc.filePath);
         });
-        axios.post(`http://localhost:51265/api/inlite`, {
+        axios.post(`http://localhost/inlite/api/inlite`, {
             documents: postDocumentsFilepath,
         }).then(res => {
             console.log(res.data[0].PathName)

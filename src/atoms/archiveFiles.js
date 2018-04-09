@@ -148,9 +148,11 @@ export default function archiveFiles(positions) {
                         }).then((positionInMongo) => {
                             if (positionInMongo == null) {
                                 positionInMongo.docs.forEach(document => {
-                                    document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
+                                    console.log(document.currentFileLocation);
+                                    document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
+                                    console.log(document.currentFileLocation);
                                 });
-                                position.markModified('docs');
+                                positionInMongo.markModified('docs');
                                 positionInMongo.save();
                             }
                         }).catch(err => {
@@ -181,7 +183,7 @@ export default function archiveFiles(positions) {
                                     positionInMongo.docs.forEach(document => {
                                         document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
                                     });
-                                    position.markModified('docs');
+                                    positionInMongo.markModified('docs');
                                     positionInMongo.save();
                                 }
                             }).catch(err => {

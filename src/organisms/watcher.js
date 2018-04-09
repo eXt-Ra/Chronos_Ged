@@ -28,9 +28,10 @@ let watcher;
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "development") {
     watcher = chokidar.watch('reception', {
+        // usePolling: true,
         awaitWriteFinish: {
-            stabilityThreshold: 2000,
-            pollInterval: 100
+            stabilityThreshold: 30000,
+            pollInterval: 5000
         },
         ignored: [
             'reception/CALVACOM'
@@ -38,9 +39,10 @@ if (process.env.NODE_ENV === "development") {
     });
 } else {
     watcher = chokidar.watch('Z:\\reception', {
+        // usePolling: true,
         awaitWriteFinish: {
-            stabilityThreshold: 2000,
-            pollInterval: 100
+            stabilityThreshold: 30000,
+            pollInterval: 5000
         },
         ignored: [
             'reception/CALVACOM'
@@ -51,16 +53,18 @@ if (process.env.NODE_ENV === "development") {
 let watcherCalva;
 if (process.env.NODE_ENV === "development") {
     watcherCalva = chokidar.watch('reception/CALVACOM', {
+        // usePolling: true,
         awaitWriteFinish: {
-            stabilityThreshold: 2000,
-            pollInterval: 100
+            stabilityThreshold: 30000,
+            pollInterval: 5000
         },
     });
 } else {
     watcherCalva = chokidar.watch('Z:\\reception/CALVACOM', {
+        // usePolling: true,
         awaitWriteFinish: {
-            stabilityThreshold: 2000,
-            pollInterval: 100
+            stabilityThreshold: 30000,
+            pollInterval: 5000
         },
     });
 }
