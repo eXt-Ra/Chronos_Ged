@@ -69,7 +69,7 @@ export default function traitFileRetour(position, remettant) {
                     case "pdf":
                         // converToPdf(position.documents, position.numEquinoxe, remettant).then(documents => {
                         if (merge) {
-                            mergePdf(documents, position.numEquinoxe).then(files => {
+                            mergePdf(position.documents, position.numEquinoxe).then(files => {
                                 //delete old pdf
                                 resolve2(files);
                             }).catch(err => {
@@ -78,7 +78,7 @@ export default function traitFileRetour(position, remettant) {
                             });
                         } else {
                             const output = [];
-                            documents.forEach((document) => {
+                            position.documents.forEach((document) => {
                                 output.push(document.fileName);
                             });
                             resolve2(output);

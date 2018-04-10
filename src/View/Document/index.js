@@ -16,7 +16,7 @@ export default class App extends Component {
 
     componentDidMount() {
         const interval = setInterval(function () {
-            axios.post(`http://172.18.17.8:8082/ged/suivi`, {
+            axios.post(`http://217.108.211.171:8082/ged/suivi`, {
                 ids: this.state.ids
             }).then(response => {
                 console.log(response.data);
@@ -29,7 +29,7 @@ export default class App extends Component {
                             isEnd: true
                         });
                         clearInterval(interval);
-                        axios.post(`http://172.18.17.8:8082/ged/removesuivi`, {
+                        axios.post(`http://217.108.211.171:8082ged/removesuivi`, {
                             ids: this.state.ids
                         });
                     }
@@ -39,7 +39,7 @@ export default class App extends Component {
     }
 
     openFile(fileName) {
-        const win = window.open(`http://172.18.17.8:8082/ged/file/${fileName}`, '_blank');
+        const win = window.open(`http://217.108.211.171:8082/ged/file/${fileName}`, '_blank');
         win.focus();
     }
 

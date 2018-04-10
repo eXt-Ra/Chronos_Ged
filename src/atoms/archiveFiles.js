@@ -146,11 +146,9 @@ export default function archiveFiles(positions) {
                         PositionSchema.findOne({
                             numEquinoxe: position.numEquinoxe
                         }).then((positionInMongo) => {
-                            if (positionInMongo == null) {
+                            if (positionInMongo != null) {
                                 positionInMongo.docs.forEach(document => {
-                                    console.log(document.currentFileLocation);
                                     document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
-                                    console.log(document.currentFileLocation);
                                 });
                                 positionInMongo.markModified('docs');
                                 positionInMongo.save();
@@ -159,7 +157,6 @@ export default function archiveFiles(positions) {
                             reject(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
                         });
                     });
-
                     resolve(positions);
                 } else {
                     rimraf(positions[0].documents[0].currentFileLocation, () => {
@@ -179,9 +176,10 @@ export default function archiveFiles(positions) {
                             PositionSchema.findOne({
                                 numEquinoxe: position.numEquinoxe
                             }).then((positionInMongo) => {
-                                if (positionInMongo == null) {
+                                console.log(positionInMongo);
+                                if (positionInMongo != null) {
                                     positionInMongo.docs.forEach(document => {
-                                        document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
+                                        document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
                                     });
                                     positionInMongo.markModified('docs');
                                     positionInMongo.save();

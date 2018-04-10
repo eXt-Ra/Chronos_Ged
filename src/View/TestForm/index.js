@@ -9,7 +9,7 @@ export default class App extends Component {
                 <Container>
                     <Row className="justify-content-center">
                         <Col md="6">
-                            <Form action="http://172.18.17.8:8082/ged" method="POST"  target="_blank">
+                            <Form action="http://217.108.211.171:8082/ged" method="POST"  target="_blank">
                                 <Label>
                                     Numdocs :
                                 </Label>
