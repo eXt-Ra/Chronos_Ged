@@ -6,38 +6,56 @@ import * as path from "path";
 import mergePdf from "../atoms/mergePdf";
 import {updateSuiviRequestGed} from "../organisms/suiviRequestGed";
 import fs from 'fs';
+import PositionSchema from "../Schema/PositionSchema";
+import converToPdf from "../atoms/converToPdf";
+import mkdirp from "mkdirp";
+import Position from "../Class/Position";
+import mergeJpg from "../atoms/mergeJpg";
 
-export default function (numDoc, suivi) {
+export default function (numDoc, suivi, mode, type, merge) {
     let archiveLocation;
     if (process.env.NODE_ENV === "development") {
         archiveLocation = "";
     } else {
         archiveLocation = "Z:\\";
     }
-    let numeroEquinoxe= "";
+    let numeroEquinoxe = "";
+    let codeEdi = "";
     return new Promise((resolve, reject) => {
-        getDataStockdoc(numDoc).then(documents => {
-            // TODO request with id files = documents, statut Ged trouvé, progress 0%
-            suivi.statut = "Documents trouvés ...";
+        function findPosition() {
+            if (mode === "numDocument") {
+                return getDataStockdoc(numDoc, false)
+            } else {
+                return getDataStockdoc(numDoc, true)
+            }
+        }
+
+        findPosition().then(documents => {
             numeroEquinoxe = documents[0].numeroEquinoxe;
-            suivi.numeroEquinoxe = documents[0].numeroEquinoxe;
-            documents.forEach(doc => {
-                suivi.files.push({
-                    fileName: doc.numenreg
-                })
-            });
-            updateSuiviRequestGed(suivi);
-            genImgOldGed(documents).then(result => {
-                // TODO request with id files progress 25% requete préparé
-                suivi.statut = "Requête en préparation ...";
-                suivi.progress = 25;
+            codeEdi = documents[0].val5;
+            if (suivi !== null) {
+                suivi.statut = "Documents trouvés ...";
+                suivi.numeroEquinoxe = documents[0].numeroEquinoxe;
+                documents.forEach(doc => {
+                    suivi.files.push({
+                        fileName: doc.numenreg
+                    })
+                });
                 updateSuiviRequestGed(suivi);
+            }
+            genImgOldGed(documents).then(result => {
+                if (suivi !== null) {
+                    suivi.statut = "Requête en préparation ...";
+                    suivi.progress = 25;
+                    updateSuiviRequestGed(suivi);
+                }
                 return insertJOBS(result.requests, result.jobIDs);
             }).then(jobIDs => {
-                // TODO request with id files progress 50% requete en file d'attente
-                suivi.statut = "File d'attente ...";
-                suivi.progress = 50;
-                updateSuiviRequestGed(suivi);
+                if (suivi !== null) {
+                    suivi.statut = "File d'attente ...";
+                    suivi.progress = 50;
+                    updateSuiviRequestGed(suivi);
+                }
                 const promiseQ = [];
                 jobIDs.forEach(jobId => {
                     // console.log(jobId);
@@ -92,29 +110,153 @@ export default function (numDoc, suivi) {
                     }))
                 });
                 Promise.all(promiseQ).then((filesPath) => {
-                    suivi.statut = "Fichier en préparation pour envoi ...";
-                    suivi.progress = 70;
-                    updateSuiviRequestGed(suivi);
+                    if (suivi !== null) {
+                        suivi.statut = "Fichier en préparation pour envoi ...";
+                        suivi.progress = 70;
+                        updateSuiviRequestGed(suivi);
+                    }
                     // resolve("test.pdf");
-                    mergePdf(filesPath, numeroEquinoxe !== "" ? numeroEquinoxe : numDoc, true).then(files => {
-                        //unlink des filesPath
-                        filesPath.forEach(file => {
-                            fs.unlink(path.join(archiveLocation, file), err => {
-                                if (err) {
-                                    throw err;
-                                }
+                    if (mode === "numDocument") {
+                        mergePdf(filesPath, numeroEquinoxe !== "" ? numeroEquinoxe : numDoc, true).then(files => {
+                            //unlink des filesPath
+                            filesPath.forEach(file => {
+                                fs.unlink(path.join(archiveLocation, file), err => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                });
                             });
-                        });
 
-                        resolve(files[0]);
-                    }).catch(err => {
-                        console.log(err);
-                    });
+                            resolve(files[0]);
+                        }).catch(err => {
+                            console.log(err);
+                        });
+                    } else {
+                        switch (type) {
+                            case "pdf":
+                                mkdirp(path.join(archiveLocation, "temp", numeroEquinoxe), (err) => {
+                                    if (merge) {
+                                        mergePdf(filesPath, numeroEquinoxe !== "" ? numeroEquinoxe : numDoc, true).then(files => {
+                                            //unlink des filesPath
+                                            filesPath.forEach(file => {
+                                                fs.unlink(path.join(archiveLocation, file), err => {
+                                                    if (err) {
+                                                        throw err;
+                                                    }
+                                                });
+                                            });
+                                            const is = fs.createReadStream(path.join(archiveLocation, "temp", files[0])),
+                                                os = fs.createWriteStream(path.join(archiveLocation, "temp", numeroEquinoxe, files[0]));
+                                            is.pipe(os);
+                                            is.on('end', function () {
+                                                resolve([path.join(archiveLocation, "temp", numeroEquinoxe), new Position(numeroEquinoxe, codeEdi, "", "")]);
+                                                // fs.unlink(path.join(archiveLocation, "temp", document.fileName), err => {
+                                                //     if (err) {
+                                                //         throw err;
+                                                //     }
+                                                // });
+                                            });
+                                            is.on('error', function (err) {
+                                                throw err;
+                                            });
+                                            os.on('error', function (err) {
+                                                throw err;
+                                            });
+                                        }).catch(err => {
+                                            console.log(err);
+                                        });
+                                    } else {
+                                        converToPdf(filesPath, numeroEquinoxe, false, true).then(documents => {
+                                            documents.forEach(document => {
+                                                const is = fs.createReadStream(path.join(archiveLocation, "temp", document.fileName)),
+                                                    os = fs.createWriteStream(path.join(archiveLocation, "temp", numeroEquinoxe, document.fileName));
+                                                is.pipe(os);
+                                                is.on('end', function () {
+                                                    resolve([path.join(archiveLocation, "temp", numeroEquinoxe), new Position(numeroEquinoxe, codeEdi, "", "")]);
+                                                    // fs.unlink(path.join(archiveLocation, "temp", document.fileName), err => {
+                                                    //     if (err) {
+                                                    //         throw err;
+                                                    //     }
+                                                    // });
+                                                });
+                                                is.on('error', function (err) {
+                                                    throw err;
+                                                });
+                                                os.on('error', function (err) {
+                                                    throw err;
+                                                });
+                                            });
+                                        }).catch(err => {
+                                            console.log(err);
+                                        })
+                                    }
+                                });
+                                break;
+                            case "jpg":
+                                mkdirp(path.join(archiveLocation, "temp", numeroEquinoxe), (err) => {
+                                    if (merge) {
+                                        mergeJpg(filesPath, numeroEquinoxe !== "" ? numeroEquinoxe : numDoc, true).then(files => {
+                                            //unlink des filesPath
+                                            filesPath.forEach(file => {
+                                                fs.unlink(path.join(archiveLocation, file), err => {
+                                                    if (err) {
+                                                        throw err;
+                                                    }
+                                                });
+                                            });
+                                            const is = fs.createReadStream(path.join(archiveLocation, "temp", files[0])),
+                                                os = fs.createWriteStream(path.join(archiveLocation, "temp", numeroEquinoxe, files[0]));
+                                            is.pipe(os);
+                                            is.on('end', function () {
+                                                resolve([path.join(archiveLocation, "temp", numeroEquinoxe), new Position(numeroEquinoxe, codeEdi, "", "")]);
+                                                // fs.unlink(path.join(archiveLocation, "temp", document.fileName), err => {
+                                                //     if (err) {
+                                                //         throw err;
+                                                //     }
+                                                // });
+                                            });
+                                            is.on('error', function (err) {
+                                                throw err;
+                                            });
+                                            os.on('error', function (err) {
+                                                throw err;
+                                            });
+                                        }).catch(err => {
+                                            console.log(err);
+                                        });
+                                    } else {
+                                        filesPath.forEach((file, index) => {
+                                            const is = fs.createReadStream(path.join(archiveLocation, file)),
+                                                // os = fs.createWriteStream(path.join(archiveLocation, `${file.substring(0, file.length - 5)}.jpg`));
+                                                os = fs.createWriteStream(path.join(archiveLocation, "temp", numeroEquinoxe, `${index}_${file.split(path.sep)[1].substring(0, file.length - 5)}.jpg`));
+                                            is.pipe(os);
+                                            is.on('end', function () {
+                                                resolve([path.join(archiveLocation, "temp", numeroEquinoxe), new Position(numeroEquinoxe, codeEdi, "", "")]);
+                                            });
+                                            is.on('error', function (err) {
+                                                throw err;
+                                            });
+                                            os.on('error', function (err) {
+                                                throw err;
+                                            });
+                                        });
+                                    }
+                                });
+                                break;
+                            default:
+                                console.log(type);
+                                console.log("Type de fichier non pris en charge");
+                                break;
+                        }
+                    }
                 }).catch(err => {
-                    suivi.statut = "ERROR";
-                    suivi.progress = 70;
-                    updateSuiviRequestGed(suivi);
-                    reject();
+                    if (suivi !== null) {
+                        suivi.statut = "ERROR";
+                        suivi.progress = 70;
+                        updateSuiviRequestGed(suivi);
+                    }
+                    console.log("ERROR 1");
+                    reject(err);
                 });
             })
         })

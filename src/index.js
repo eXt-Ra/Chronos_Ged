@@ -15,8 +15,8 @@ mongoose.Promise = Promise;
 // new ErrorBot(new GedError("100", "Erreur lors de l'extraction de l'archive", "toto.zip", "toto.zip", "une erreur", "SOC-TEST", 3, true));
 
 // generateOldGed(8789740);
-
-// import PositionSchema from './Schema/PositionSchema'
+//
+import PositionSchema from './Schema/PositionSchema'
 // PositionSchema.find({
 // }).then(positions => {
 //     positions.forEach(position => {
@@ -30,3 +30,51 @@ mongoose.Promise = Promise;
 //         position.save();
 //     })
 // });
+
+// import _ from 'lodash'
+//
+// // numEquinoxe: "8215296"
+// // numEquinoxe: "8778839"
+// PositionSchema.find({}).then(positions => {
+//     // (position => {
+//     // position.docs.forEach(document =>{
+//     //     console.log(document.currentFileLocation);
+//     //     document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
+//     //     console.log(document.currentFileLocation);
+//     // });
+//     // position.markModified('docs');
+//     // console.log("success");
+//     // position.save();
+//     // const arr = positions.docs.filter((thing, index, self) =>
+//     //     index === self.findIndex((t) => {
+//     //         return t.fileName === thing.fileName && t.archiveSource === thing.archiveSource
+//     //     })
+//     // );
+//
+//     const dupli = [];
+//     positions.forEach(position => {
+//         let asDuplicate = false;
+//         position.docs.forEach(i => {
+//             position.docs.forEach(o => {
+//                 if (i.fileName === o.fileName && i.archiveSource === o.archiveSource) {
+//                     if (position.docs.indexOf(o) !== position.docs.indexOf(i)) {
+//                         if (!dupli.includes(position.docs.indexOf(i))) {
+//                             asDuplicate = {
+//                                 numEquinoxe: position.numEquinoxe,
+//                                 fileName: asDuplicate.fileName ? asDuplicate.fileName.concat(i.fileName) : [i.fileName]
+//                             }
+//                         }
+//                     }
+//                 }
+//             })
+//
+//         });
+//         if (asDuplicate !== false) {
+//             dupli.push(asDuplicate)
+//         }
+//     })
+//     if (dupli.length > 0) {
+//         console.log(dupli)
+//     }
+// });
+

@@ -14,6 +14,7 @@ import moment from "moment";
 import mkdirp from "mkdirp";
 import * as async from "async";
 import setError from "../molecules/setError";
+import generateNomenclature from "./generateNomenclature";
 
 export default function traitFileRetour(position, remettant) {
     //copy du fichier dans le dossier retour avec la bonne nomenclature et le bon type de fichier
@@ -170,72 +171,12 @@ export default function traitFileRetour(position, remettant) {
             const promiseQ = [];
 
             mkdirp(`${archiveLocation}${path.join("reception", position.codeEdi, "remonte")}`, () => {
-
-                const options = [{
-                    title: "SUFFIXE",
-                    fnc: () => {
-                        return conf.nomenclature.suffixe
-                    }
-                }, {
-                    title: "PREFIXE",
-                    fnc: () => {
-                        return conf.nomenclature.prefixe
-                    }
-                }, {
-                    title: "NUMEROEQUINOXE",
-                    fnc: () => {
-                        return position.numEquinoxe
-                    }
-                }, {
-                    title: "DATE",
-                    fnc: () => {
-                        return moment().format();
-                    }
-                }, {
-                    title: "PAGE",
-                    fnc: (file) => {
-                        return file.charAt(0);
-                    }
-                }, {
-                    title: "REFDISTRI",
-                    fnc: () => {
-                        return position.codeEdi;
-                    }
-                }, {
-                    title: "REFTMS",
-                    fnc: () => {
-                        getRefTMS(position).then(refTMS => {
-                            console.log(refTMS);
-                            return refTMS;
-                        })
-                    }
-                }];
-
-                const currentOption = [];
-                options.forEach(option => {
-                    if (conf.nomenclature.pattern.indexOf(option.title) > -1) {
-                        currentOption.push(option);
-                    }
-                });
-
-                function generateNomenclature(nomenclature, currentOption, file, refTMS) {
-                    currentOption.forEach(option => {
-                        if (option.title === "REFTMS") {
-                            nomenclature = nomenclature.replace("REFTMS", refTMS);
-                        } else {
-                            nomenclature = nomenclature.replace(option.title, option.fnc(file));
-                        }
-
-                    });
-                    return nomenclature;
-                }
-
                 files.forEach(file => {
                     promiseQ.push(
                         function (callback) {
                             if (conf.nomenclature.pattern.indexOf("REFTMS") > -1) {
                                 getRefTMS(position).then(refTMS => {
-                                    const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, currentOption, file, refTMS)}${file.substr(file.length - 4)}`;
+                                    const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, position, file, refTMS)}${file.substr(file.length - 4)}`;
                                     fs.copy(
                                         path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
                                         path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
@@ -243,13 +184,14 @@ export default function traitFileRetour(position, remettant) {
                                         err => {
                                             if (err) {
                                                 return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                            } else {
+                                                console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
+                                                callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
                                             }
-                                            console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
-                                            callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
                                         });
                                 });
                             } else {
-                                const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, currentOption, file)}${file.substr(file.length - 4)}`;
+                                const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, position, file)}${file.substr(file.length - 4)}`;
                                 fs.copy(
                                     path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
                                     path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
@@ -257,9 +199,10 @@ export default function traitFileRetour(position, remettant) {
                                     err => {
                                         if (err) {
                                             return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                        } else {
+                                            console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
+                                            callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
                                         }
-                                        console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
-                                        callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
                                     });
                             }
                         }
@@ -271,9 +214,9 @@ export default function traitFileRetour(position, remettant) {
                         if (errObj) {
                             // console.log(errObj);
                             setError(errObj)
-                        } else {
-                            resolve(results);
                         }
+                        resolve(results);
+
                     });
 
                 // Promise.all(promiseQ).then(results => {

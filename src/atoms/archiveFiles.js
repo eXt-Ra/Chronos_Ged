@@ -72,10 +72,10 @@ export default function archiveFiles(positions) {
                                     });
                                 });
                                 is.on('error', function (err) {
-                                    setError(new GedError("108", `Stream vers le fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+                                    setError(new GedError("108", `Stream vers le fichier source pour archivage échoué ${position.documents[0].fileName}`, position.documents[0].fileName, position.archiveSource, err, position.codeEdi, 2, false));
                                 });
                                 os.on('error', function (err) {
-                                    setError(new GedError("109", `Stream vers la destination source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+                                    setError(new GedError("109", `Stream vers la destination source pour archivage échoué ${position.documents[0].fileName}`, position.documents[0].fileName, position.archiveSource, err, position.codeEdi, 2, false));
                                 });
                             });
 
@@ -120,7 +120,7 @@ export default function archiveFiles(positions) {
                 new Promise((resolve, reject) => {
                     ncp(path.join(positions[0].documents[0].currentFileLocation, "lds"), `${archiveLocation}lds`, function (err) {
                         if (err) {
-                            reject(new GedError("107", `Déplacement des LDS échoué de ${positions[0].documents[0].currentFileLocation}/lds`, positions[0].archiveSource, positions[0].archiveSource, err, positions[0].codeEdi, 2, false, positions));
+                            setError(new GedError("107", `Déplacement des LDS échoué de ${positions[0].documents[0].currentFileLocation}/lds`, positions[0].archiveSource, positions[0].archiveSource, err, positions[0].codeEdi, 2, false, positions));
                         }
                         resolve();
                     })
@@ -176,13 +176,15 @@ export default function archiveFiles(positions) {
                             PositionSchema.findOne({
                                 numEquinoxe: position.numEquinoxe
                             }).then((positionInMongo) => {
-                                console.log(positionInMongo);
                                 if (positionInMongo != null) {
                                     positionInMongo.docs.forEach(document => {
                                         document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
                                     });
                                     positionInMongo.markModified('docs');
-                                    positionInMongo.save();
+                                    positionInMongo.save()
+                                        .catch(err => {
+                                            reject(new GedError("203", `Update DB échoué pour ${positionInMongo.numEquinoxe}`, positionInMongo.numEquinoxe, positionInMongo.archiveSource, err, positionInMongo.codeEdi, 3, false));
+                                        })
                                 }
                             }).catch(err => {
                                 reject(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));

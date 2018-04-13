@@ -27,14 +27,16 @@ import axios from "axios/index";
 import traitRetour from "./molecules/traitRetour";
 import gedDocumentGed from './organisms/gedDocumentGed'
 import generateOldGed from "./molecules/generateOldGed";
+import generateNomenclature from "./atoms/generateNomenclature"
 import {
     addSuiviRequestGed, getSuiviRequestGed, removeSuiviRequestGed,
     updateSuiviRequestGed
 } from "./organisms/suiviRequestGed";
-
-
 import crypto from "crypto";
 import url_crypt from "url-crypt";
+
+import archiver from "archiver";
+import rimraf from "rimraf";
 
 const urlCrypt = url_crypt('~{ry*I)==yU/]9<7DPk!Hj"R#:-/Z7(hTBnlRS=4CXF');
 
@@ -368,7 +370,7 @@ gedRouter.get('/file/:file', function (req, res) {
     const pathFile = urlCrypt.decryptObj(req.params.file);
     fs.readFile(path.join(archiveLocation, "temp", pathFile), function (err, data) {
         res.contentType("application/pdf");
-        res.setHeader('Content-disposition', `inline; filename="${pathFile.split(path.sep)[pathFile.split(path.sep).length -1]}"`);
+        res.setHeader('Content-disposition', `inline; filename="${pathFile.split(path.sep)[pathFile.split(path.sep).length - 1]}"`);
         res.send(data);
         console.timeEnd("requestApi");
     });
@@ -390,7 +392,7 @@ gedRouter.post('/', (req, res) => {
                 statut: "En attente ...",
                 files: [],
                 progress: 0,
-                requestEnd : ""
+                requestEnd: ""
             };
             suivis.push(suivi);
             ids.push(id);
@@ -409,17 +411,82 @@ gedRouter.post('/', (req, res) => {
         initialState: JSON.stringify(initialState)
     }));
 
-    Promise.all(promiseQ).then(results =>{
+    Promise.all(promiseQ).then(results => {
         console.log("finish all");
         mergePdfPdftk(results, requestId, true).then(files => {
             suivis[0].requestEnd = urlCrypt.cryptObj(files[0]);
             updateSuiviRequestGed(suivis[0]);
-        }).catch(err =>{
+        }).catch(err => {
             console.log(err);
             suivis[0].requestEnd = "ERROR";
             updateSuiviRequestGed(suivis[0]);
         });
     })
+});
+
+gedRouter.post('/pole', (req, res) => {
+    const promiseQ = [];
+    const filetype = req.body.filetype || null;
+    const requestId = uid.uid(8);
+    if (filetype !== null) {
+        const nomenclature = req.body.nomenclature || null;
+        const merge = req.body.merge || false;
+
+        req.body.numEquinoxe.forEach(numeroEquinoxe => {
+            if (numeroEquinoxe !== "") {
+                promiseQ.push(gedDocumentGed(numeroEquinoxe, null, filetype, merge));
+            }
+        });
+
+        Promise.all(promiseQ).then(results => {
+                const output = fs.createWriteStream(path.join(archiveLocation, "temp", `${requestId}.zip`));
+                const archive = archiver('zip', {
+                    zlib: {level: 9}
+                });
+                output.on('close', function () {
+                    fs.readFile(path.join(archiveLocation, "temp", `${requestId}.zip`), function (err, data) {
+                        res.send(data);
+                        console.timeEnd("requestApi");
+                    });
+                    results.forEach(folder => {
+                        rimraf(folder[0], err => {
+                            if (err) {
+                                console.log(err);
+                            }
+                        });
+                    })
+                });
+
+                archive.pipe(output);
+
+                const promiseK = [];
+                results.forEach(folder => {
+                    const folderName = folder[0].split(path.sep)[folder[0].split(path.sep).length - 1];
+                    promiseK.push(
+                        new Promise((resolve => {
+                            fs.readdir(folder[0], function (err, items) {
+                                items.forEach(file => {
+                                    archive.file(path.join(archiveLocation, "temp", folderName, file),
+                                        {name: `${generateNomenclature(nomenclature, folder[1], file, "REFTMS")}.${filetype}`});
+                                });
+                                resolve();
+                            })
+                        }))
+                    )
+                });
+                Promise.all(promiseK).then(() => {
+                    archive.finalize();
+                })
+            }
+        ).catch(()=>{
+            console.log("ERROR 3");
+            res.status(500).send("Une erreur est survenue")
+        })
+
+    } else {
+        res.status(400).send("L'argument filetype est obligatoire");
+    }
+
 });
 
 

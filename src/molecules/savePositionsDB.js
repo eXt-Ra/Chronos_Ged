@@ -18,13 +18,15 @@ export default function (positions) {
                 numEquinoxe: position.numEquinoxe
             }).then((positionInMongo) => {
                 if (positionInMongo == null) {
-                    new PositionMongo(position.toSchema()).save((err) => {
+                    new PositionMongo(position.toSchema()).save().then(() => {
+                        resolve()
+                    }).catch(err => {
                         if (err) {
-                            reject(new GedError("202", `Insert DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                            setError(new GedError("202", `Insert DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
                         } else {
                             resolve()
                         }
-                    });
+                    })
                 } else {
                     //position exist add document to the positionInMongo
                     PositionMongo.update(
@@ -38,7 +40,7 @@ export default function (positions) {
                         function (err, model) {
                             if (err) {
                                 console.log(err);
-                                reject(new GedError("203", `Update DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                                setError(new GedError("203", `Update DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
                             }
                             console.log(model);
                             resolve()
@@ -46,7 +48,7 @@ export default function (positions) {
                     );
                 }
             }).catch(err => {
-                reject(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                setError(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
             });
         }).catch(errObj => {
             setError(errObj);
@@ -76,7 +78,7 @@ export default function (positions) {
                 }).catch(errObj => {
                     //TODO did this trigger ?
                     console.log("Err that should not be trigger");
-                    reject(errObj);
+                    console.log(errObj);
                     callback();
                 })
             },

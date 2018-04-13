@@ -58,9 +58,9 @@ export default function setError(errObj) {
 
 
             moveErrSource().then(isFileInErrorFolder => {
-                new ErrorBot(errObj,isFileInErrorFolder);
+                // new ErrorBot(errObj,isFileInErrorFolder);
             }).catch(err => {
-                new ErrorBot(errObj,false);
+                // new ErrorBot(errObj,false);
             });
 
             if (errObj.stopProcess) {

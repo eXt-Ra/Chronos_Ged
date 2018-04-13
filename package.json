@@ -9,6 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "archiver": "^2.1.1",
     "async": "^2.6.0",
     "axios": "^0.17.1",
     "babel-core": "^6.26.0",
@@ -25,6 +26,7 @@
     "chokidar": "^2.0.0",
     "dns": "^0.2.2",
     "express": "^4.14.0",
+    "extract-zip": "^1.6.6",
     "file-type": "^7.5.0",
     "fs-extra": "^5.0.0",
     "gm": "^1.23.1",
@@ -56,6 +58,7 @@
     ]
   },
   "devDependencies": {
-    "css-loader": "^0.28.11"
+    "css-loader": "^0.28.11",
+    "zip-folder": "latest"
   }
 }

@@ -12,6 +12,7 @@ import setError from "../molecules/setError";
 import GedError from "../Class/GedError";
 import {addSuivi, changeProgress, changeStatus, removeSuivi} from "./suiviTreatment";
 import Suivi from "../Class/Suivi";
+import GedDownload from './../Schema/GedDownloadSchema'
 
 import LineByLineReader from 'line-by-line';
 import downloadImages from "../atoms/downloadImages";
@@ -28,7 +29,7 @@ let watcher;
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "development") {
     watcher = chokidar.watch('reception', {
-        // usePolling: true,
+        usePolling: true,
         awaitWriteFinish: {
             stabilityThreshold: 30000,
             pollInterval: 5000
@@ -39,7 +40,7 @@ if (process.env.NODE_ENV === "development") {
     });
 } else {
     watcher = chokidar.watch('Z:\\reception', {
-        // usePolling: true,
+        usePolling: true,
         awaitWriteFinish: {
             stabilityThreshold: 30000,
             pollInterval: 5000
@@ -53,7 +54,7 @@ if (process.env.NODE_ENV === "development") {
 let watcherCalva;
 if (process.env.NODE_ENV === "development") {
     watcherCalva = chokidar.watch('reception/CALVACOM', {
-        // usePolling: true,
+        usePolling: true,
         awaitWriteFinish: {
             stabilityThreshold: 30000,
             pollInterval: 5000
@@ -61,7 +62,7 @@ if (process.env.NODE_ENV === "development") {
     });
 } else {
     watcherCalva = chokidar.watch('Z:\\reception/CALVACOM', {
-        // usePolling: true,
+        usePolling: true,
         awaitWriteFinish: {
             stabilityThreshold: 30000,
             pollInterval: 5000
@@ -171,6 +172,7 @@ watcher.on('add', filePath => {
     }
 });
 
+
 watcherCalva
     .on('unlinkDir', filePath => console.log(`Directory ${filePath} has been removed`))
     .on('error', error => console.log(`Watcher error: ${error}`))
@@ -202,10 +204,26 @@ function startTreatmentCalva() {
                 return traitRetour(positions);
             }).then(() => {
                 //TODO status terminé delete de la bdd
+            }).catch(err => {
+                console.log(err);
             })
+        }).catch(err => {
+            console.log(err);
         })
     }, 5000)
 }
+
+// GedDownload.find({}).then(geds => {
+//     traitBarcode(geds).then(positions => {
+//         return savePositionsDB(positions);
+//     }).then(positions => {
+//         return createLdsAndJpg0(positions);
+//     }).then(positions => {
+//         return archiveFiles(positions);
+//     }).then(positions => {
+//         return traitRetour(positions);
+//     })
+// });
 
 watcherCalva.on('add', filePath => {
     console.log(`File ${filePath} has been added`);

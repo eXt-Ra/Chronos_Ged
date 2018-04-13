@@ -5,6 +5,7 @@ import fs from 'fs';
 import _ from 'lodash';
 import Document from './../Class/Document'
 import * as path from "path";
+import setError from "../molecules/setError";
 
 export default function splitPdf(document) {
     return new Promise((resolve, reject) => {
@@ -14,9 +15,9 @@ export default function splitPdf(document) {
                 return;
             }
             const currentFiles = files;
-            exec(`pdftk ${document.filePath} burst output ${path.join(document.currentFileLocation, `${document.fileNameNoExt}_%02d.pdf`)}`, (error, stdout, stderr) => {
+            exec(`pdftk "${document.filePath}" burst output "${path.join(document.currentFileLocation, `${document.fileNameNoExt}_%02d.pdf`)}"`, (error, stdout, stderr) => {
                 if (error) {
-                    reject(new GedError("115", `Error on pdftk cmd de ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+                    reject(new GedError("115", `Error on pdftk cmd de ${document.fileName}`, document.fileName, document.archiveSource, error, document.codeEdi, 2, false));
                     return;
                 }
 
