@@ -5,22 +5,33 @@ import Document from "../Class/Document";
 import SocieteMongo from "../Schema/SocieteSchema";
 import GedError from "../Class/GedError";
 import * as async from "async";
+import mkdirp from "mkdirp";
 
 function getFileType(contentType) {
     switch (contentType) {
         case "application/pdf":
             return "pdf";
+        case "image/tif":
+            return "tif";
+        case "image/tiff":
+            return "tif";
+        case "image/jpeg":
+            return "jpg";
+        case "image/png":
+            return "png";
     }
 }
 
 async function downloadImage(imgToDl) {
+
     const response = await
         axios({
             method: 'GET',
             url: imgToDl.fileUrl,
             responseType: 'stream'
         });
-    const filePath = path.join("output", "CALVACOM", `${imgToDl.numeroEquinoxe}-${imgToDl._id}.${getFileType(response.headers['content-type'])}`);
+    const filePath = path.join("output", "CALVACOM", imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4), `${imgToDl.numeroEquinoxe}-${imgToDl._id}.${getFileType(response.headers['content-type'])}`);
+    console.log(filePath);
     // pipe the result stream into a file on disc
     response.data.pipe(fs.createWriteStream(filePath));
 
@@ -65,15 +76,18 @@ export default function (imagesToDl) {
         const documents = [];
         async.eachLimit(imagesToDl, 1, function (imgToDl, callback) {
             console.log("start Download");
-            downloadImage(imgToDl).then((document) => {
-                console.log("finish Download");
-                documents.push(document);
-                console.log(`${documents.length}/${imagesToDl.length}`);
-                callback(null);
-            }).catch(err => {
-                console.log(err);
-                // callback();
-            })
+            const outPutDir = path.join("output", "CALVACOM", imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4));
+            mkdirp(outPutDir, () => {
+                downloadImage(imgToDl).then((document) => {
+                    console.log("finish Download");
+                    documents.push(document);
+                    console.log(`${documents.length}/${imagesToDl.length}`);
+                    callback(null);
+                }).catch(err => {
+                    console.log(err);
+                    callback();
+                })
+            });
         }, function (err) {
             console.log("finish dl image");
             resolve(documents);

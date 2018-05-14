@@ -104,10 +104,10 @@ export default function archiveFiles(positions) {
                                 });
                             });
                             is.on('error', function (err) {
-                                setError(new GedError("108", `Stream vers le fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+                                setError(new GedError("108", `Stream vers le fichier source pour archivage échoué ${positions[0].documents[0].fileName}`, positions[0].documents[0].fileName, positions[0].documents[0].archiveSource, err, positions[0].documents[0].codeEdi, 2, false));
                             });
                             os.on('error', function (err) {
-                                setError(new GedError("109", `Stream vers la destination source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+                                setError(new GedError("109", `Stream vers la destination source pour archivage échoué ${positions[0].documents[0].fileName}`, positions[0].documents[0].fileName, positions[0].documents[0].archiveSource, err, positions[0].documents[0].codeEdi, 2, false));
                             });
                         });
 
@@ -118,48 +118,73 @@ export default function archiveFiles(positions) {
             }
             promiseQ.push(
                 new Promise((resolve, reject) => {
-                    ncp(path.join(positions[0].documents[0].currentFileLocation, "lds"), `${archiveLocation}lds`, function (err) {
-                        if (err) {
-                            setError(new GedError("107", `Déplacement des LDS échoué de ${positions[0].documents[0].currentFileLocation}/lds`, positions[0].archiveSource, positions[0].archiveSource, err, positions[0].codeEdi, 2, false, positions));
-                        }
-                        resolve();
-                    })
+                    if (positions[0].documents[0].filePath.indexOf("CALVACOM") > -1) {
+                        positions.forEach(position => {
+                            ncp(path.join(position.documents[0].currentFileLocation, "lds"), `${archiveLocation}lds`, function (err) {
+                                console.log(`${path.join(position.documents[0].currentFileLocation, "lds")} vers ${archiveLocation}lds`);
+                                if (err) {
+                                    setError(new GedError("107", `Déplacement des LDS échoué de ${position.documents[0].currentFileLocation}/lds`, position.archiveSource, position.archiveSource, err, position.codeEdi, 2, false, position));
+                                }
+                                resolve();
+                            })
+                        })
+                    } else {
+                        ncp(path.join(positions[0].documents[0].currentFileLocation, "lds"), `${archiveLocation}lds`, function (err) {
+                            console.log(`${path.join(positions[0].documents[0].currentFileLocation, "lds")} vers ${archiveLocation}lds`);
+                            if (err) {
+                                setError(new GedError("107", `Déplacement des LDS échoué de ${positions[0].documents[0].currentFileLocation}/lds`, positions[0].archiveSource, positions[0].archiveSource, err, positions[0].codeEdi, 2, false, positions));
+                            }
+                            resolve();
+                        })
+                    }
                 }).catch(errObj => {
                     setError(errObj);
                 })
             );
             Promise.all(promiseQ).then(() => {
-                if (positions[0].documents[0].filePath.indexOf("CALVACOM") > -1) {
+                if (positions[0].documents[positions[0].documents.length - 1].filePath.indexOf("CALVACOM") > -1) {
+                    const promiseQ = [];
                     positions.forEach(position => {
-                        position.documents.forEach(document => {
-                            document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
-                        });
+                        promiseQ.push(
+                            new Promise(resolve2 => {
+                                rimraf(position.documents[0].currentFileLocation, () => {
+                                    position.documents.forEach(document => {
+                                        document.currentFileLocation = document.currentFileLocation.replace("output", "archive")
+                                    });
 
-                        // PositionSchema.findOneAndUpdate(
-                        //     {numEquinoxe: position.numEquinoxe},
-                        //     {$set: {docs: position.docsToSchema}}, function (err) {
-                        //         if (err) {
-                        //             console.log(err);
-                        //         }
-                        //     });
+                                    // PositionSchema.findOneAndUpdate(
+                                    //     {numEquinoxe: position.numEquinoxe},
+                                    //     {$set: {docs: position.docsToSchema}}, function (err) {
+                                    //         if (err) {
+                                    //             console.log(err);
+                                    //         }
+                                    //     });
 
-                        PositionSchema.findOne({
-                            numEquinoxe: position.numEquinoxe
-                        }).then((positionInMongo) => {
-                            if (positionInMongo != null) {
-                                positionInMongo.docs.forEach(document => {
-                                    document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
-                                });
-                                positionInMongo.markModified('docs');
-                                positionInMongo.save();
-                            }
-                        }).catch(err => {
-                            reject(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
-                        });
+                                    PositionSchema.findOne({
+                                        numEquinoxe: position.numEquinoxe
+                                    }).then((positionInMongo) => {
+                                        if (positionInMongo != null) {
+                                            positionInMongo.docs.forEach(document => {
+                                                document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
+                                            });
+                                            positionInMongo.markModified('docs');
+                                            positionInMongo.save().catch(err => {
+                                                reject(new GedError("203", `Update DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                                            });
+                                            resolve2();
+                                        }
+                                    }).catch(err => {
+                                        reject(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                                    });
+                                })
+                            })
+                        )
                     });
-                    resolve(positions);
+                    Promise.all(promiseQ).then(results => {
+                        resolve(positions);
+                    });
                 } else {
-                    rimraf(positions[0].documents[0].currentFileLocation, () => {
+                    rimraf(positions[0].documents[positions[0].documents.length - 1].currentFileLocation, () => {
                         positions.forEach(position => {
                             position.documents.forEach(document => {
                                 document.currentFileLocation = document.currentFileLocation.replace("output", "archive")

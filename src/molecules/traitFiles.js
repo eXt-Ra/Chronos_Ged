@@ -1,6 +1,7 @@
 import fileTypeCheck from './../atoms/fileTypeCheck'
 import traitPdfFileName from './../atoms/traitPdfFileName'
 import traitJpgFileName from './../atoms/traitJpgFileName'
+import traitTifFileName from './../atoms/traitTifFileName'
 import GedError from "../Class/GedError";
 import traitPdf from "../atoms/traitPdf";
 import traitJpg from "../atoms/traitJpg";
@@ -42,8 +43,11 @@ export default function traitFiles(documents) {
                     case "jpg":
                         promiseQ.push(traitJpgFileName(documents));
                         break;
+                    case "tif":
+                        promiseQ.push(traitTifFileName(documents));
+                        break;
                     default:
-                        reject(new GedError("104", `Erreur fichier non supporté`, documents[0].archiveSource, documents[0].archiveSource, "", documents[0].codeEdi, 3, true));
+                        reject(new GedError("104", `Erreur fichier non supporté ${type}`, documents[0].archiveSource, documents[0].archiveSource, "", documents[0].codeEdi, 3, true));
                         return;
                 }
                 end("filename");

@@ -95,6 +95,7 @@ export default function gedDocumentGed(numDocument, suivi, ...args) {
                                         });
                                         break;
                                     case "jpg-pdf":
+                                    case "tif-pdf":
                                         mkdirp(path.join(archiveLocation, "temp", position.numEquinoxe), (err) => {
                                             if (args[1]) {
                                                 mergePdf(position.docs, position.numEquinoxe).then(files => {
@@ -199,6 +200,7 @@ export default function gedDocumentGed(numDocument, suivi, ...args) {
                                         break;
                                     case "pdf-pdf":
                                     case "jpg-jpg":
+                                    case "tif-tif":
                                         mkdirp(path.join(archiveLocation, "temp", position.numEquinoxe), (err) => {
                                             if (args[1]) {
                                                 mergePdf(position.docs, position.numEquinoxe).then(files => {

@@ -26,9 +26,11 @@ export default function setError(errObj) {
                 archiveLocation = "Z:\\";
             }
 
+            console.log(`ERROR result : ${(errObj.source !== "unknown" || errObj.source.indexOf("archive") === -1) && errObj.type !== "100"}`);
+
             function moveErrSource() {
                 return new Promise(resolve2 => {
-                    if (errObj.source !== "unknown" || errObj.source.indexOf("archive") === -1) {
+                    if ((errObj.source !== "unknown" || errObj.source.indexOf("archive") === -1) && errObj.type !== "100") {
                         mkdirp(`${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`, (err) => {
                             const is = fs.createReadStream(`${path}${_.endsWith(errObj.source, '.zip') === true ? `${archiveLocation}reception/${errObj.codeEdi}/descente` : `output/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}`}/${errObj.source}`),
                                 os = fs.createWriteStream(`${path}error/${errObj.codeEdi}/${errObj.sourceArchive.slice(0, -4)}/${errObj.source}`);
@@ -50,7 +52,7 @@ export default function setError(errObj) {
                                 console.log(err);
                             });
                         });
-                    }else{
+                    } else {
                         resolve2(false);
                     }
                 })

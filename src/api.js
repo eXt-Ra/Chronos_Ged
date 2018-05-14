@@ -4,11 +4,12 @@ import ErrorSchema from './Schema/ErrorSchema'
 import SocieteSchema from './Schema/SocieteSchema'
 import PositionSchema from './Schema/PositionSchema'
 import Position from './Class/Position'
+import Document from './Class/Document'
 import fs from 'fs';
-
+var ncp = require('ncp').ncp;
+ncp.limit = 16;
 import uid from "rand-token";
-
-const express = require('express');
+import async from 'async';
 const app = express();
 import bodyParser from 'body-parser';
 import mergePdf from "./atoms/mergePdf";
@@ -25,9 +26,12 @@ import DocumentInterface from "./View/Document/index";
 import TestForm from "./View/TestForm/index";
 import axios from "axios/index";
 import traitRetour from "./molecules/traitRetour";
+import createLdsAndJpg0 from './molecules/createLdsAndJpg0';
 import gedDocumentGed from './organisms/gedDocumentGed'
 import generateOldGed from "./molecules/generateOldGed";
 import generateNomenclature from "./atoms/generateNomenclature"
+import UserApi from './Schema/UserApiSchema'
+
 import {
     addSuiviRequestGed, getSuiviRequestGed, removeSuiviRequestGed,
     updateSuiviRequestGed
@@ -37,6 +41,11 @@ import url_crypt from "url-crypt";
 
 import archiver from "archiver";
 import rimraf from "rimraf";
+
+import express from "express";
+import moment from "moment";
+import setError from "./molecules/setError";
+import mkdirp from "mkdirp";
 
 const urlCrypt = url_crypt('~{ry*I)==yU/]9<7DPk!Hj"R#:-/Z7(hTBnlRS=4CXF');
 
@@ -151,16 +160,104 @@ app.get('/retour/regen', (req, res) => {
                     pos.documents.push(newDoc);
                 });
                 traitRetour([pos]).then(data => {
+
                     res.send(data);
                 });
             } else {
-                const appString = renderToString(<Page404/>);
-                // res.send(template({
-                //     body: appString,
-                //     title: 'Page 404'
-                // }))
+                res.send("position inconnu");
             }
         })
+});
+
+app.post('/jp0/regen', (req, res) => {
+    const posInconnu = [];
+    const posConnu = [];
+    const positions = [];
+    // req.body.numEquinoxe.forEach((numEquinoxe, index) => {
+    //     PositionSchema.findOne(
+    //         {numEquinoxe: numEquinoxe}
+    //     ).then(position => {
+    //         if (position != null) {
+    //             console.log(position.numEquinoxe)
+    //             position.documents = position.numEquinoxe;
+    //             const pos = new Position(position.numEquinoxe, position.codeEdi, position.societe, position.archiveSource);
+    //             pos.remettant = position.remettant;
+    //             pos.numeroDoc = position.numeroDoc;
+    //             position.docs.forEach(doc => {
+    //                 const newDoc = new Document(doc.codeEdi, position.societe, doc.archiveSource, path.join("Z:", doc.currentFileLocation, doc.fileName));
+    //                 pos.documents.push(newDoc);
+    //             });
+    //             posConnu.push(numEquinoxe);
+    //             positions.push(pos);
+    //         } else {
+    //             posInconnu.push(numEquinoxe);
+    //         }
+    //         if (index + 1 === req.body.numEquinoxe.length) {
+    //             console.log("STSRATATA")
+    //             createLdsAndJpg0(positions).then(data => {
+    //                 positions.forEach(pos => {
+    //                     ncp(path.join(pos.documents[0].currentFileLocation, "lds"), `Z:\\lds`, function (err) {
+    //                         if (err) {
+    //                             //console.log(new GedError("107", `Déplacement des LDS échoué de ${pos.documents[0].currentFileLocation}/lds`, pos.archiveSource, pos.archiveSource, err, pos.codeEdi, 2, false, ""));
+    //                         }
+    //                     })
+    //                 });
+    //                 res.send([posConnu, posInconnu]);
+    //             }).catch(err => {
+    //                 console.log(err);
+    //             })
+    //         }
+    //     })
+    // });
+
+    // async.parallelLimit(promiseQ, 3,
+    //     function (errObj, results) {
+    //         if (errObj) {
+    //             setError(errObj);
+    //         }
+    //         console.log(`Taille : ${positions.length}`);
+    //         resolve(positions);
+    //     });
+
+    async.each(req.body.numEquinoxe, function (numEquinoxe, callback) {
+        PositionSchema.findOne(
+            {numEquinoxe: numEquinoxe}
+        ).then(position => {
+            if (position != null) {
+                console.log(position.numEquinoxe);
+                position.documents = position.numEquinoxe;
+                const pos = new Position(position.numEquinoxe, position.codeEdi, position.societe, position.archiveSource);
+                pos.remettant = position.remettant;
+                pos.numeroDoc = position.numeroDoc;
+                position.docs.forEach(doc => {
+                    const newDoc = new Document(doc.codeEdi, position.societe, doc.archiveSource, path.join("Z:", doc.currentFileLocation, doc.fileName));
+                    pos.documents.push(newDoc);
+                });
+                posConnu.push(numEquinoxe);
+                positions.push(pos);
+            } else {
+                posInconnu.push(numEquinoxe);
+            }
+            callback();
+        })
+    }, function () {
+        console.log("STSRATATA");
+        createLdsAndJpg0(positions).then(data => {
+            positions.forEach(pos => {
+                ncp(path.join(pos.documents[0].currentFileLocation, "lds"), `Z:\\lds`, function (err) {
+                    if (err) {
+                        console.log(new GedError("107", `Déplacement des LDS échoué de ${pos.documents[0].currentFileLocation}/lds`, pos.archiveSource, pos.archiveSource, err, pos.codeEdi, 2, false, ""));
+                    }else{
+                        console.log("Régénération jp0 terminé")
+                    }
+                })
+            });
+        }).catch(err => {
+            console.log(err);
+        });
+        res.send([posConnu, posInconnu]);
+    });
+
 });
 app.get('/file', (req, res) => {
     fs.readFile(path.join("error", req.query.codeEdi, req.query.folder, req.query.file), function (err, data) {
@@ -262,6 +359,38 @@ app.get('/crypt/:numdoc', (req, res) => {
 //     gedDocumentGed(numDocument, suivi).then()
 //
 // });
+
+//Token Security for api
+// gedRouter.use(function (req, res, next) {
+//     UserApi.findOne({
+//         token: req.headers["x-access-token"]
+//     }, (err, user) => {
+//         if (err) {
+//             throw err;
+//         }
+//         if (!user) {
+//             return res.status(403).send({
+//                 success: false,
+//                 message: "No valid token provided."
+//             });
+//         } else if (user) {
+//             if (user.active) {
+//                 next();
+//                 user.save((err) => {
+//                     if (err) {
+//                         throw err;
+//                     }
+//                 });
+//             } else {
+//                 return res.status(403).send({
+//                     success: false,
+//                     message: "Token désactivé"
+//                 });
+//             }
+//         }
+//     });
+// });
+
 gedRouter.get('/old/:numeroequinoxe', function (req, res) {
     const numeroEquinoxe = req.params.numeroequinoxe;
     const id = `${numeroEquinoxe}-${uid.uid(16)}`;
@@ -478,7 +607,7 @@ gedRouter.post('/pole', (req, res) => {
                     archive.finalize();
                 })
             }
-        ).catch(()=>{
+        ).catch(() => {
             console.log("ERROR 3");
             res.status(500).send("Une erreur est survenue")
         })
@@ -489,6 +618,83 @@ gedRouter.post('/pole', (req, res) => {
 
 });
 
+gedRouter.get('/pole/:date', function (req, res) {
+    const date = moment(req.params.date);
+    const requestId = uid.uid(8);
+
+    UserApi.findOne({
+        token: req.headers["x-access-token"]
+    }, (err, userApi) => {
+        if (err) {
+            throw err;
+        }
+        PositionSchema.find({
+            "codeEdi": userApi.codeEdi,
+            "dateTreatment": {$gt: date}
+        }, {"numEquinoxe": 1}).then(positions => {
+            const promiseQ = [];
+            positions.forEach(position => {
+                promiseQ.push(gedDocumentGed(position.numEquinoxe, null, "pdf", true));
+            });
+
+            Promise.all(promiseQ).then(results => {
+                    const output = fs.createWriteStream(path.join(archiveLocation, "temp", `${requestId}.zip`));
+                    const archive = archiver('zip', {
+                        zlib: {level: 9}
+                    });
+                    output.on('close', function () {
+                        fs.readFile(path.join(archiveLocation, "temp", `${requestId}.zip`), function (err, data) {
+                            res.send(data);
+                            console.timeEnd("requestApi");
+                        });
+                        results.forEach(folder => {
+                            rimraf(folder[0], err => {
+                                if (err) {
+                                    console.log(err);
+                                }
+                            });
+                        })
+                    });
+
+                    archive.pipe(output);
+
+                    const promiseK = [];
+                    results.forEach(folder => {
+                        const folderName = folder[0].split(path.sep)[folder[0].split(path.sep).length - 1];
+                        promiseK.push(
+                            new Promise((resolve => {
+                                fs.readdir(folder[0], function (err, items) {
+                                    items.forEach(file => {
+                                        archive.file(path.join(archiveLocation, "temp", folderName, file),
+                                            {name: `${generateNomenclature(nomenclature, folder[1], file, "REFTMS")}.${filetype}`});
+                                    });
+                                    resolve();
+                                })
+                            }))
+                        )
+                    });
+                    Promise.all(promiseK).then(() => {
+                        archive.finalize();
+                    })
+                }
+            ).catch(() => {
+                console.log("ERROR 3");
+                res.status(500).send("Une erreur est survenue")
+            })
+        })
+    });
+});
+
+gedRouter.get('/pole/:dateFrom/:dateTo', function (req, res) {
+    const dateFrom = req.params.dateFrom;
+    const dateTo = req.params.dateTo;
+
+    // "codeEdi" : "MORABOR",
+    //     "dateTreatment" : {
+    //     "$gt" : ISODate("2018-02-16T00:00:00.000+0000"),
+    //         "$lt" : ISODate("2018-02-16T23:59:59.000+0000")
+    // }
+});
 
 app.use('/ged', gedRouter);
 

@@ -136,7 +136,8 @@ export default function traitFileRetour(position, remettant) {
                                 path.join(`${archiveLocation}`, document.currentFileLocation, `${index}${document.fileNameNoExt}_copy${document.fileName.substr(document.fileName.length - 4)}`),
                                 err => {
                                     if (err) {
-                                        throw err;
+                                        // throw err;
+                                        console.log(err);
                                     }
                                     resolve3(`${index}${document.fileNameNoExt}_copy${document.fileName.substr(document.fileName.length - 4)}`);
                                 })
@@ -148,7 +149,6 @@ export default function traitFileRetour(position, remettant) {
                     resolve2(result);
                 })
             })
-
         }
 
 
@@ -170,7 +170,7 @@ export default function traitFileRetour(position, remettant) {
         }).then(files => {
             const promiseQ = [];
 
-            mkdirp(`${archiveLocation}${path.join("reception", position.codeEdi, "remonte")}`, () => {
+            mkdirp(`${archiveLocation}${path.join("reception", remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte")}`, () => {
                 files.forEach(file => {
                     promiseQ.push(
                         function (callback) {
@@ -183,22 +183,31 @@ export default function traitFileRetour(position, remettant) {
                                             newFilePath),
                                         err => {
                                             if (err) {
-                                                return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                                setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                                callback(null);
                                             } else {
                                                 console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
                                                 callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
                                             }
                                         });
-                                });
+                                }).catch(err => {
+                                    setError(new GedError("REFTMS", `Error find ref tms for ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                    callback(null);
+                                })
                             } else {
                                 const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, position, file)}${file.substr(file.length - 4)}`;
                                 fs.copy(
                                     path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
-                                    path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
-                                        newFilePath),
+                                    path.join(`${archiveLocation}reception`,
+                                        remettant === true ?
+                                            position.remettant.codeEdi === "FOURREI"
+                                                ? "FOURTOU" : position.remettant.codeEdi :
+                                            position.codeEdi === "FOURREI" ? "FOURTOU" : position.codeEdi,
+                                        "remonte", newFilePath),
                                     err => {
                                         if (err) {
-                                            return callback(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                            setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                            callback(null);
                                         } else {
                                             console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
                                             callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
@@ -211,12 +220,11 @@ export default function traitFileRetour(position, remettant) {
 
                 async.parallelLimit(promiseQ, 3,
                     function (errObj, results) {
-                        if (errObj) {
-                            // console.log(errObj);
-                            setError(errObj)
-                        }
+                        // if (errObj) {
+                        //     // console.log(errObj);
+                        //     setError(errObj)
+                        // }
                         resolve(results);
-
                     });
 
                 // Promise.all(promiseQ).then(results => {

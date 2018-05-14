@@ -11,7 +11,10 @@ export default function traitRetour(positions) {
             if (wantRetour(position.societe)) {
                 promiseQ.push(
                     function (callback) {
-                        traitFileRetour(position, false).then(data => callback(null, data))
+                        traitFileRetour(position, false).then(data => callback(null, data)).catch(err => {
+                            console.log(err);
+                            callback(null);
+                        })
                     }
                 )
             }
@@ -20,12 +23,14 @@ export default function traitRetour(positions) {
         async.parallelLimit(promiseQ, 3,
             function (err, results) {
                 const promiseQB = [];
-
                 positions.forEach(position => {
                     if (wantRetour(position.remettant)) {
                         promiseQB.push(
                             function (callback) {
-                                traitFileRetour(position, true).then(data => callback(null, data))
+                                traitFileRetour(position, true).then(data => callback(null, data)).catch(err => {
+                                    console.log(err);
+                                    callback(null);
+                                })
                             }
                         )
                     }

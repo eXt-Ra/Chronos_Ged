@@ -20,7 +20,7 @@ export default function traitPdf(documents) {
                     callback(null);
                 }
             ).catch(err => {
-                //TODO
+                callback(null);
                 setError(new GedError("Pdf", `Erreur lors du calcule du nombre de page du pdf de ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 3, false));
             });
         }, function (err) {
