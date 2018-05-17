@@ -15,13 +15,16 @@ export default function traitBarcode(documents) {
         let isLastDocError = false;
 
         function isPole(barecode) {
-            let output = "";
-            barecode.forEach(item => {
-                if (item.includes("POLE")) {
-                    output = item;
-                }
+            // barecode.forEach(item => {
+            //     if (item.includes("POLE")) {
+            //         console.log(item)
+            //         return item;
+            //     }
+            // });
+
+            return barecode.find(item =>{
+                return item.includes("POLE")
             });
-            return output;
         }
 
         function isGeodis(barecode) {
@@ -41,8 +44,7 @@ export default function traitBarcode(documents) {
                 if (isGeodis(document.barecode)) {
                     traitGeodis(document);
                 }
-
-                if (isPole(document.barecode) !== "" || isNEiF) {
+                if (isPole(document.barecode) || isNEiF) {
                     isLastDocError = false;
                     //barcode is numEquinoxe
                     if (positions.length !== 0) {

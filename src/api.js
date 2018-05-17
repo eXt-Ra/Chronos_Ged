@@ -88,14 +88,15 @@ app.get('/error', function (req, res) {
                 lastError: {
                     $last: {
                         type: "$type",
-                        message: "$message"
+                        message: "$message",
+                        dateError: "$dateError"
                     }
                 },
                 erreurs: {$push: "$$ROOT"}
             },
         }, {
             $sort: {
-                "archives.dateError": -1
+                "lastError.dateError": -1
             }
         }
     ], function (err, result) {
@@ -173,51 +174,6 @@ app.post('/jp0/regen', (req, res) => {
     const posInconnu = [];
     const posConnu = [];
     const positions = [];
-    // req.body.numEquinoxe.forEach((numEquinoxe, index) => {
-    //     PositionSchema.findOne(
-    //         {numEquinoxe: numEquinoxe}
-    //     ).then(position => {
-    //         if (position != null) {
-    //             console.log(position.numEquinoxe)
-    //             position.documents = position.numEquinoxe;
-    //             const pos = new Position(position.numEquinoxe, position.codeEdi, position.societe, position.archiveSource);
-    //             pos.remettant = position.remettant;
-    //             pos.numeroDoc = position.numeroDoc;
-    //             position.docs.forEach(doc => {
-    //                 const newDoc = new Document(doc.codeEdi, position.societe, doc.archiveSource, path.join("Z:", doc.currentFileLocation, doc.fileName));
-    //                 pos.documents.push(newDoc);
-    //             });
-    //             posConnu.push(numEquinoxe);
-    //             positions.push(pos);
-    //         } else {
-    //             posInconnu.push(numEquinoxe);
-    //         }
-    //         if (index + 1 === req.body.numEquinoxe.length) {
-    //             console.log("STSRATATA")
-    //             createLdsAndJpg0(positions).then(data => {
-    //                 positions.forEach(pos => {
-    //                     ncp(path.join(pos.documents[0].currentFileLocation, "lds"), `Z:\\lds`, function (err) {
-    //                         if (err) {
-    //                             //console.log(new GedError("107", `Déplacement des LDS échoué de ${pos.documents[0].currentFileLocation}/lds`, pos.archiveSource, pos.archiveSource, err, pos.codeEdi, 2, false, ""));
-    //                         }
-    //                     })
-    //                 });
-    //                 res.send([posConnu, posInconnu]);
-    //             }).catch(err => {
-    //                 console.log(err);
-    //             })
-    //         }
-    //     })
-    // });
-
-    // async.parallelLimit(promiseQ, 3,
-    //     function (errObj, results) {
-    //         if (errObj) {
-    //             setError(errObj);
-    //         }
-    //         console.log(`Taille : ${positions.length}`);
-    //         resolve(positions);
-    //     });
 
     async.each(req.body.numEquinoxe, function (numEquinoxe, callback) {
         PositionSchema.findOne(

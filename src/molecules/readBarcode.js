@@ -39,7 +39,7 @@ function findPoleBarcode(documents) {
         axios.post(`http://localhost/inlite/api/inlite`, {
             documents: postDocumentsFilepath,
         }).then(res => {
-            console.log(res.data[0].PathName)
+            console.log(res.data[0].PathName);
             resolve(res.data);
         }).catch(err => {
             reject(new GedError("300", `Erreur lors du axios de ${documents[0].fileName}`, documents[0].fileName, documents[0].archiveSource, err, documents[0].codeEdi, 2, false));

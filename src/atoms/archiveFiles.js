@@ -169,12 +169,13 @@ export default function archiveFiles(positions) {
                                             });
                                             positionInMongo.markModified('docs');
                                             positionInMongo.save().catch(err => {
-                                                reject(new GedError("203", `Update DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                                                setError(new GedError("203", `Update DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
                                             });
                                             resolve2();
                                         }
                                     }).catch(err => {
-                                        reject(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                                        setError(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                                        resolve2();
                                     });
                                 })
                             })
@@ -208,11 +209,11 @@ export default function archiveFiles(positions) {
                                     positionInMongo.markModified('docs');
                                     positionInMongo.save()
                                         .catch(err => {
-                                            reject(new GedError("203", `Update DB échoué pour ${positionInMongo.numEquinoxe}`, positionInMongo.numEquinoxe, positionInMongo.archiveSource, err, positionInMongo.codeEdi, 3, false));
+                                            setError(new GedError("203", `Update DB échoué pour ${positionInMongo.numEquinoxe}`, positionInMongo.numEquinoxe, positionInMongo.archiveSource, err, positionInMongo.codeEdi, 3, false));
                                         })
                                 }
                             }).catch(err => {
-                                reject(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                                setError(new GedError("204", `Select DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
                             });
                         });
                         resolve(positions);

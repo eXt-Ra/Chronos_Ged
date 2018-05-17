@@ -67,10 +67,33 @@ const jobMissZip = new CronJob('0 */30 * * * *', function () {
             });
         });
     });
+    // fs.readdir("Z:\\reception\\CALVACOM\\descente", function (err, items) {
+    //     items.forEach(file => {
+    //         if (_.endsWith(file, '.TXT')) {
+    //             const lr = new LineByLineReader(`Z:\\reception\\CALVACOM\\descente\\${file}`);
+    //             lr.on('error', function (err) {
+    //                 // 'err' contains error object
+    //             });
+    //
+    //             lr.on('line', function (line) {
+    //                 lines.push({line: line, filePath: filePath});
+    //             });
+    //
+    //             lr.on('end', function () {
+    //                 if (!treatCalvaActive) {
+    //                     treatCalvaActive = true;
+    //                     startTreatmentCalva();
+    //                 }
+    //             });
+    //         }
+    //     });
+    // });
+
 }, null, false, 'Europe/Paris');
 
 initFoler().then((results) => {
     watcher = chokidar.watch(results, {
+        // watcher = chokidar.watch([`Z:\\reception\\CLAUPUL\\descente`], {
         usePolling: true,
         awaitWriteFinish: {
             stabilityThreshold: 30000,
@@ -271,7 +294,6 @@ function startTreatmentCalva() {
             }).then(positions => {
                 return createLdsAndJpg0(positions);
             }).then(positions => {
-                console.log(positions);
                 return archiveFiles(positions);
             }).then(positions => {
                 return traitRetour(positions);
