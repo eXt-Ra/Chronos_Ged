@@ -23,7 +23,7 @@ export default function mergePdf(documents, numEquinoxe, ...args) {
         });
 
         const inputPdf = arrInputPdf.join(" ");
-
+        console.log(inputPdf);
 
         // exec(`pdftk ${inputPdf} cat output ${archiveLocation}${ !args[0] ? path.join(documents[0].currentFileLocation, `${numEquinoxe}_cat.pdf`) : path.join("temp", `${numEquinoxe}.pdf`)}`, (error, stdout, stderr) => {
         exec(`gm convert -density 150 ${inputPdf} -quality 90 -resize 80% ${archiveLocation}${ !args[0] ? path.join(documents[0].currentFileLocation, `${numEquinoxe}_cat.pdf`) : path.join("temp", `${numEquinoxe}.pdf`)}`, (error, stdout, stderr) => {

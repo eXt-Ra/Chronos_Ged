@@ -33,7 +33,6 @@ export default function archiveFiles(positions) {
                                 is.on('end', function () {
                                     fs.unlink(document.filePath, err => {
                                         if (err) {
-                                            console.log(err);
                                             //setError(new GedError("110", `Delete du fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                                         } else {
                                             resolve();
@@ -96,7 +95,6 @@ export default function archiveFiles(positions) {
                             is.on('end', function () {
                                 fs.unlink(path.join(`${archiveLocation}reception`, positions[0].codeEdi, "descente", positions[0].archiveSource), err => {
                                     if (err) {
-                                        console.log(err)
                                         //setError(new GedError("110", `Delete du fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
                                     } else {
                                         resolve();
@@ -169,7 +167,7 @@ export default function archiveFiles(positions) {
                                             });
                                             positionInMongo.markModified('docs');
                                             positionInMongo.save().catch(err => {
-                                                setError(new GedError("203", `Update DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
+                                                //setError(new GedError("203", `Update DB échoué pour ${position.numEquinoxe}`, position.numEquinoxe, position.archiveSource, err, position.codeEdi, 3, false));
                                             });
                                             resolve2();
                                         }
@@ -209,7 +207,7 @@ export default function archiveFiles(positions) {
                                     positionInMongo.markModified('docs');
                                     positionInMongo.save()
                                         .catch(err => {
-                                            setError(new GedError("203", `Update DB échoué pour ${positionInMongo.numEquinoxe}`, positionInMongo.numEquinoxe, positionInMongo.archiveSource, err, positionInMongo.codeEdi, 3, false));
+                                            //setError(new GedError("203", `Update DB échoué pour ${positionInMongo.numEquinoxe}`, positionInMongo.numEquinoxe, positionInMongo.archiveSource, err, positionInMongo.codeEdi, 3, false));
                                         })
                                 }
                             }).catch(err => {

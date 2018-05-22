@@ -54,7 +54,7 @@ function initFoler() {
     })
 }
 
-const jobMissZip = new CronJob('0 */30 * * * *', function () {
+const jobMissZip = new CronJob('0 */60 * * * *', function () {
     console.log("RUN CRON JOB");
     fs.readdir("Z:\\reception", function (err, items) {
         items.forEach(codeEdi => {
@@ -96,8 +96,8 @@ initFoler().then((results) => {
         // watcher = chokidar.watch([`Z:\\reception\\CLAUPUL\\descente`], {
         usePolling: true,
         awaitWriteFinish: {
-            stabilityThreshold: 30000,
-            pollInterval: 5000
+            stabilityThreshold: 60000,
+            pollInterval: 30000
         }
     });
 

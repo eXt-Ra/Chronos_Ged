@@ -39,7 +39,6 @@ export default function traitFileRetour(position, remettant) {
                         mergePdf(position.documents, position.numEquinoxe).then(files => {
                             resolve2(files);
                         }).catch(err => {
-                            console.log(err);
                             reject2(err);
                         });
                         break;
@@ -47,7 +46,6 @@ export default function traitFileRetour(position, remettant) {
                         mergeJpg(position.documents, position.numEquinoxe).then(files => {
                             resolve2(files);
                         }).catch(err => {
-                            console.log(err);
                             reject2(err);
                         });
                         break;
@@ -137,7 +135,6 @@ export default function traitFileRetour(position, remettant) {
                                 err => {
                                     if (err) {
                                         // throw err;
-                                        console.log(err);
                                     }
                                     resolve3(`${index}${document.fileNameNoExt}_copy${document.fileName.substr(document.fileName.length - 4)}`);
                                 })
@@ -177,42 +174,81 @@ export default function traitFileRetour(position, remettant) {
                             if (conf.nomenclature.pattern.indexOf("REFTMS") > -1) {
                                 getRefTMS(position).then(refTMS => {
                                     const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, position, file, refTMS)}${file.substr(file.length - 4)}`;
-                                    fs.copy(
-                                        path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
-                                        path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
-                                            newFilePath),
-                                        err => {
-                                            if (err) {
-                                                setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
-                                                callback(null);
-                                            } else {
-                                                console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
-                                                callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
-                                            }
+                                    // fs.copy(
+                                    //     path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
+                                    //     path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
+                                    //         newFilePath),
+                                    //     err => {
+                                    //         if (err) {
+                                    //             setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                    //             callback(null);
+                                    //         } else {
+                                    //             console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
+                                    //             callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
+                                    //         }
+                                    //     });
+                                    const is = fs.createReadStream(path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file)),
+                                        os = fs.createWriteStream(path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
+
+                                    is.pipe(os);
+
+                                    is.on('end', function () {
+                                        fs.unlink(path.join(`${archiveLocation}reception`, "CALVACOM", "descente", position.archiveSource), err => {
+                                            console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
+                                            callback(null);
                                         });
+                                    });
+                                    is.on('error', function (err) {
+                                        setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                    });
+                                    os.on('error', function (err) {
+                                        setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                    });
                                 }).catch(err => {
                                     setError(new GedError("REFTMS", `Error find ref tms for ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
                                     callback(null);
                                 })
                             } else {
                                 const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, position, file)}${file.substr(file.length - 4)}`;
-                                fs.copy(
-                                    path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
-                                    path.join(`${archiveLocation}reception`,
+                                // fs.copy(
+                                //     path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
+                                //     path.join(`${archiveLocation}reception`,
+                                //         remettant === true ?
+                                //             position.remettant.codeEdi === "FOURREI"
+                                //                 ? "FOURTOU" : position.remettant.codeEdi :
+                                //             position.codeEdi === "FOURREI" ? "FOURTOU" : position.codeEdi,
+                                //         "remonte", newFilePath),
+                                //     err => {
+                                //         if (err) {
+                                //             setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                //             callback(null);
+                                //         } else {
+                                //             console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
+                                //             callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
+                                //         }
+                                //     });
+                                const is = fs.createReadStream(path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file)),
+                                    os = fs.createWriteStream(path.join(`${archiveLocation}reception`,
                                         remettant === true ?
                                             position.remettant.codeEdi === "FOURREI"
                                                 ? "FOURTOU" : position.remettant.codeEdi :
                                             position.codeEdi === "FOURREI" ? "FOURTOU" : position.codeEdi,
-                                        "remonte", newFilePath),
-                                    err => {
-                                        if (err) {
-                                            setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
-                                            callback(null);
-                                        } else {
-                                            console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
-                                            callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
-                                        }
+                                        "remonte", newFilePath));
+
+                                is.pipe(os);
+
+                                is.on('end', function () {
+                                    fs.unlink(path.join(`${archiveLocation}reception`, "CALVACOM", "descente", position.archiveSource), err => {
+                                        console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
+                                        callback(null);
                                     });
+                                });
+                                is.on('error', function (err) {
+                                    setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                });
+                                os.on('error', function (err) {
+                                    setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
+                                });
                             }
                         }
                     );
@@ -234,7 +270,6 @@ export default function traitFileRetour(position, remettant) {
                 // });
             });
         }).catch(err => {
-            console.log(err);
             setError(new GedError("104", `Erreur survenue lors des traitements`, "unknown", position.documents[0].archiveSource, "", position.documents[0].codeEdi, 3, false))
             resolve();
         });
