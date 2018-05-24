@@ -38,3 +38,7 @@ output
 temp
 
 *.TXT
+
+src/connmongo\.js
+
+src/conn\.js

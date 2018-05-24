@@ -86,43 +86,44 @@ export default function unZip(pathZip) {
                         //
                         // });
 
-                        setTimeout(() => {
-                            extract(pathZip, {dir: path.join("E:", "Ged_NodeJS", outputDir)}, function (err) {
-                                if (err) {
-                                    reject(new GedError("100", "Erreur lors de l'extraction de l'archive", zipName, zipName, err, codeEdi, 3, true));
-                                } else {
-                                    console.log('Ecriture output zip Close');
-                                    fs.readdir(outputDir, function (err, items) {
-                                        if (err) {
-                                            reject(new GedError("102", `Impossible de fs.readdir le dossier ${outputDir}`, zipName, zipName, err, codeEdi, 3, true));
-                                            return;
+                        // setTimeout(() => {
+                        extract(pathZip, {dir: path.join("E:", "Ged_NodeJS", outputDir)}, function (err) {
+                        // extract(pathZip, {dir: path.join("/Users/eXtRa/Documents/Dev/GED/ged_project/dev/Server/", outputDir)}, function (err) {
+                            if (err) {
+                                reject(new GedError("100", "Erreur lors de l'extraction de l'archive", zipName, zipName, err, codeEdi, 3, true));
+                            } else {
+                                console.log('Ecriture output zip Close');
+                                fs.readdir(outputDir, function (err, items) {
+                                    if (err) {
+                                        reject(new GedError("102", `Impossible de fs.readdir le dossier ${outputDir}`, zipName, zipName, err, codeEdi, 3, true));
+                                        return;
+                                    }
+                                    const files = [];
+
+                                    SocieteMongo.findOne({
+                                        codeEdi: codeEdi
+                                    }).then((societe) => {
+                                        if (societe != null) {
+                                            items.forEach(file => {
+                                                const pathFile = path.join(outputDir, file);
+                                                files.push(
+                                                    new Document(codeEdi, societe, zipName, pathFile)
+                                                );
+                                            });
+                                            resolve(files);
+
+                                        } else {
+                                            reject(new GedError("200", `Societe introuvable pour le codeEdi ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
                                         }
-                                        const files = [];
-
-                                        SocieteMongo.findOne({
-                                            codeEdi: codeEdi
-                                        }).then((societe) => {
-                                            if (societe != null) {
-                                                items.forEach(file => {
-                                                    const pathFile = path.join(outputDir, file);
-                                                    files.push(
-                                                        new Document(codeEdi, societe, zipName, pathFile)
-                                                    );
-                                                });
-                                                resolve(files);
-
-                                            } else {
-                                                reject(new GedError("200", `Societe introuvable pour le codeEdi ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
-                                            }
-                                        }).catch(err => {
-                                            if (err) {
-                                                reject(new GedError("201", `Erreur lors de l'acces MongoDB pour la recherche de societe ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
-                                            }
-                                        });
+                                    }).catch(err => {
+                                        if (err) {
+                                            reject(new GedError("201", `Erreur lors de l'acces MongoDB pour la recherche de societe ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
+                                        }
                                     });
-                                }
-                            });
-                        }, 10000)
+                                });
+                            }
+                        });
+                        // }, 10000)
 
                         // const writeStream = fstream.Writer(outputDir);
                         // const stream = readStream

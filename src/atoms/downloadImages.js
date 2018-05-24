@@ -22,7 +22,7 @@ function getFileType(contentType) {
     }
 }
 
-async function downloadImage(imgToDl) {
+async function downloadImage(imgToDl, codeEdi, source) {
 
     const response = await
         axios({
@@ -30,8 +30,7 @@ async function downloadImage(imgToDl) {
             url: imgToDl.fileUrl,
             responseType: 'stream'
         });
-    const filePath = path.join("output", "CALVACOM", imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4), `${imgToDl.numeroEquinoxe}-${imgToDl._id}.${getFileType(response.headers['content-type'])}`);
-    console.log(filePath);
+    const filePath = path.join("output", codeEdi, source !== null ? source.slice(0, -4) : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4), `${imgToDl.numeroEquinoxe}-${imgToDl._id}.${getFileType(response.headers['content-type'])}`);
     // pipe the result stream into a file on disc
     response.data.pipe(fs.createWriteStream(filePath));
 
@@ -42,7 +41,7 @@ async function downloadImage(imgToDl) {
                 codeEdi: imgToDl.codeEdi
             }).then((societe) => {
                 if (societe != null) {
-                    const newDoc = new Document(imgToDl.codeEdi, societe, imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1], filePath);
+                    const newDoc = new Document(imgToDl.codeEdi, societe, source !== null ? source : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1], filePath);
                     newDoc.barecode = [`POLE${imgToDl.numeroEquinoxe}`];
                     resolve(newDoc);
                 } else {
@@ -64,7 +63,7 @@ async function downloadImage(imgToDl) {
 }
 
 
-export default function (imagesToDl) {
+export default function (imagesToDl, codeEdi, source) {
     return new Promise((resolve, reject) => {
         // const promiseQ = [];
         // imagesToDl.forEach(imgToDl => {
@@ -76,9 +75,10 @@ export default function (imagesToDl) {
         const documents = [];
         async.eachLimit(imagesToDl, 1, function (imgToDl, callback) {
             console.log("start Download");
-            const outPutDir = path.join("output", "CALVACOM", imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4));
+
+            const outPutDir = path.join("output", codeEdi, source !== null ? source.slice(0, -4) : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4));
             mkdirp(outPutDir, () => {
-                downloadImage(imgToDl).then((document) => {
+                downloadImage(imgToDl, codeEdi, source).then((document) => {
                     console.log("finish Download");
                     documents.push(document);
                     console.log(`${documents.length}/${imagesToDl.length}`);

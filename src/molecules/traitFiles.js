@@ -6,6 +6,7 @@ import GedError from "../Class/GedError";
 import traitPdf from "../atoms/traitPdf";
 import traitJpg from "../atoms/traitJpg";
 import traitTif from "../atoms/traitTif";
+import traitCsv from "../atoms/traitCsv";
 import isSocieteNEiF from "../atoms/isSocieteNEiF";
 
 export default function traitFiles(documents) {
@@ -23,6 +24,9 @@ export default function traitFiles(documents) {
                         break;
                     case "tif":
                         promiseQ.push(traitTif(documents));
+                        break;
+                    case "csv":
+                        promiseQ.push(traitCsv(documents));
                         break;
                     default:
                         reject(new GedError("104", `Erreur fichier non supporté`, documents[0].archiveSource, documents[0].archiveSource, "", documents[0].codeEdi, 3, true));

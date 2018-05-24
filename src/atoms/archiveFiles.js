@@ -90,18 +90,22 @@ export default function archiveFiles(positions) {
                             const is = fs.createReadStream(path.join(`${archiveLocation}reception`, positions[0].codeEdi, "descente", positions[0].archiveSource)),
                                 os = fs.createWriteStream(path.join(positions[0].documents[0].currentFileLocation.replace("output", `${archiveLocation}archive`), positions[0].archiveSource));
 
+                            let asError = false;
                             is.pipe(os);
 
                             is.on('end', function () {
-                                fs.unlink(path.join(`${archiveLocation}reception`, positions[0].codeEdi, "descente", positions[0].archiveSource), err => {
-                                    if (err) {
-                                        //setError(new GedError("110", `Delete du fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
-                                    } else {
-                                        resolve();
-                                    }
-                                });
+                                if (!asError) {
+                                    fs.unlink(path.join(`${archiveLocation}reception`, positions[0].codeEdi, "descente", positions[0].archiveSource), err => {
+                                        if (err) {
+                                            //setError(new GedError("110", `Delete du fichier source pour archivage échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false));
+                                        } else {
+                                            resolve();
+                                        }
+                                    });
+                                }
                             });
                             is.on('error', function (err) {
+                                asError = true;
                                 setError(new GedError("108", `Stream vers le fichier source pour archivage échoué ${positions[0].documents[0].fileName}`, positions[0].documents[0].fileName, positions[0].documents[0].archiveSource, err, positions[0].documents[0].codeEdi, 2, false));
                             });
                             os.on('error', function (err) {
