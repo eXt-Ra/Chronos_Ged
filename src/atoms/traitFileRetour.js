@@ -66,26 +66,26 @@ export default function traitFileRetour(position, remettant) {
             return new Promise(((resolve2, reject2) => {
                 switch (type) {
                     case "pdf":
-                        // converToPdf(position.documents, position.numEquinoxe, remettant).then(documents => {
-                        if (merge) {
-                            mergePdf(position.documents, position.numEquinoxe).then(files => {
-                                //delete old pdf
-                                resolve2(files);
-                            }).catch(err => {
-                                console.log(err);
-                                reject2(err);
-                            });
-                        } else {
-                            const output = [];
-                            position.documents.forEach((document) => {
-                                output.push(document.fileName);
-                            });
-                            resolve2(output);
-                        }
-                        // }).catch(err => {
-                        //     console.log(err);
-                        //     reject2(err);
-                        // });
+                        converToPdf(position.documents, position.numEquinoxe, remettant).then(documents => {
+                            if (merge) {
+                                mergePdf(documents, position.numEquinoxe).then(files => {
+                                    //delete old pdf
+                                    resolve2(files);
+                                }).catch(err => {
+                                    console.log(err);
+                                    reject2(err);
+                                });
+                            } else {
+                                const output = [];
+                                documents.forEach((document) => {
+                                    output.push(document.fileName);
+                                });
+                                resolve2(output);
+                            }
+                        }).catch(err => {
+                            console.log(err);
+                            reject2(err);
+                        });
                         break;
                     case "jpg":
                         converToJpg(position.documents, position.numEquinoxe).then(documents => {
@@ -108,7 +108,6 @@ export default function traitFileRetour(position, remettant) {
                             console.log(err);
                             reject2(err);
                         });
-                        break;
                         break;
                     case "tif":
                         //TODO

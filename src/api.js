@@ -161,7 +161,6 @@ app.get('/retour/regen', (req, res) => {
                     pos.documents.push(newDoc);
                 });
                 traitRetour([pos]).then(data => {
-
                     res.send(data);
                 });
             } else {
@@ -636,7 +635,7 @@ gedRouter.get('/pole/:date', function (req, res) {
             ).catch(() => {
                 console.log("ERROR 3");
                 res.status(500).send("Une erreur est survenue")
-            })
+            })!
         })
     });
 });

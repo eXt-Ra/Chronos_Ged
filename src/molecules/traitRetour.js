@@ -25,14 +25,16 @@ export default function traitRetour(positions) {
                 const promiseQB = [];
                 positions.forEach(position => {
                     if (wantRetour(position.remettant)) {
-                        promiseQB.push(
-                            function (callback) {
-                                traitFileRetour(position, true).then(data => callback(null, data)).catch(err => {
-                                    console.log(err);
-                                    callback(null);
-                                })
-                            }
-                        )
+                        if (position.remettant.retour.wantRemettant) {
+                            promiseQB.push(
+                                function (callback) {
+                                    traitFileRetour(position, true).then(data => callback(null, data)).catch(err => {
+                                        console.log(err);
+                                        callback(null);
+                                    })
+                                }
+                            )
+                        }
                     }
                 });
                 async.parallelLimit(promiseQB, 3,
