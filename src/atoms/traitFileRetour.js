@@ -173,19 +173,6 @@ export default function traitFileRetour(position, remettant) {
                             if (conf.nomenclature.pattern.indexOf("REFTMS") > -1) {
                                 getRefTMS(position).then(refTMS => {
                                     const newFilePath = `${generateNomenclature(conf.nomenclature.pattern, position, file, refTMS)}${file.substr(file.length - 4)}`;
-                                    // fs.copy(
-                                    //     path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file),
-                                    //     path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte",
-                                    //         newFilePath),
-                                    //     err => {
-                                    //         if (err) {
-                                    //             setError(new GedError("111", `Copy du fichier pour retour fail pour ${file}`, file, position.documents[0].archiveSource, err, position.codeEdi, 3, false, position));
-                                    //             callback(null);
-                                    //         } else {
-                                    //             console.log(`Move ok de ${path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath)}`);
-                                    //             callback(null, path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
-                                    //         }
-                                    //     });
                                     const is = fs.createReadStream(path.join(`${archiveLocation}`, position.documents[0].currentFileLocation, file)),
                                         os = fs.createWriteStream(path.join(`${archiveLocation}reception`, remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte", newFilePath));
 

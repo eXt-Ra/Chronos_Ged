@@ -6,10 +6,12 @@ import PositionSchema from './Schema/PositionSchema'
 import Position from './Class/Position'
 import Document from './Class/Document'
 import fs from 'fs';
+
 var ncp = require('ncp').ncp;
 ncp.limit = 16;
 import uid from "rand-token";
 import async from 'async';
+
 const app = express();
 import bodyParser from 'body-parser';
 import mergePdf from "./atoms/mergePdf";
@@ -26,6 +28,8 @@ import DocumentInterface from "./View/Document/index";
 import TestForm from "./View/TestForm/index";
 import axios from "axios/index";
 import traitRetour from "./molecules/traitRetour";
+import traitRetourApha from "./molecules/traitRetourApha";
+import traitRetourAphaOnlyRemettant from "./molecules/traitRetourAphaOnlyRemettant";
 import createLdsAndJpg0 from './molecules/createLdsAndJpg0';
 import gedDocumentGed from './organisms/gedDocumentGed'
 import generateOldGed from "./molecules/generateOldGed";
@@ -46,6 +50,7 @@ import express from "express";
 import moment from "moment";
 import setError from "./molecules/setError";
 import mkdirp from "mkdirp";
+import traitFileRetourAlpha from "./atoms/traitFileRetourAlpha";
 
 const urlCrypt = url_crypt('~{ry*I)==yU/]9<7DPk!Hj"R#:-/Z7(hTBnlRS=4CXF');
 
@@ -160,13 +165,83 @@ app.get('/retour/regen', (req, res) => {
                     const newDoc = new Document(doc.codeEdi, position.societe, doc.archiveSource, path.join(doc.currentFileLocation, doc.fileName));
                     pos.documents.push(newDoc);
                 });
-                traitRetour([pos]).then(data => {
+                traitRetourApha([pos]).then(data => {
                     res.send(data);
                 });
             } else {
                 res.send("position inconnu");
             }
         })
+});
+
+app.post('/retour/multiregen', (req, res) => {
+    const positionsToDo = [];
+    const positionsInconnu = [];
+    const positionsConnu = [];
+    async.each(req.body.numEquinoxe, function (numEquinoxe, callback) {
+        PositionSchema.findOne({numEquinoxe: numEquinoxe})
+            .then(position => {
+                if (position != null) {
+                    position.documents = position.docs;
+                    const pos = new Position(position.numEquinoxe, position.codeEdi, position.societe, position.archiveSource);
+                    pos.remettant = position.remettant;
+                    pos.numeroDoc = position.numeroDoc;
+                    position.docs.forEach(doc => {
+                        const newDoc = new Document(doc.codeEdi, position.societe, doc.archiveSource, path.join(doc.currentFileLocation, doc.fileName));
+                        pos.documents.push(newDoc);
+                    });
+                    positionsToDo.push(pos);
+                    positionsConnu.push(numEquinoxe);
+                } else {
+                    positionsInconnu.push(numEquinoxe);
+                }
+                callback()
+            })
+    }, function () {
+        console.log("SPLALALA");
+        traitRetourApha(positionsToDo).then(data => {
+            res.send([positionsConnu, positionsInconnu]);
+        });
+    });
+});
+
+app.get('/retour/:remettant/:from/:to', (req, res) => {
+    const positionsToDo = [];
+    const positionsConnu = [];
+    //2018-02-16
+    PositionSchema.find(
+        {
+            "remettant.codeEdi": req.params.remettant,
+            "dateTreatment": {
+                "$gte": req.params.from,
+                "$lte": req.params.to
+            }
+        })
+        .then(positions => {
+            if (positions != null) {
+                async.each(positions, function (position, callback) {
+                    position.documents = position.docs;
+                    const pos = new Position(position.numEquinoxe, position.codeEdi, position.societe, position.archiveSource);
+                    pos.remettant = position.remettant;
+                    pos.numeroDoc = position.numeroDoc;
+                    position.docs.forEach(doc => {
+                        const newDoc = new Document(doc.codeEdi, position.societe, doc.archiveSource, path.join(doc.currentFileLocation, doc.fileName));
+                        pos.documents.push(newDoc);
+                    });
+                    positionsToDo.push(pos);
+                    positionsConnu.push(position.numEquinoxe);
+                    callback();
+                }, function () {
+                    console.log("POULOULOU");
+                    traitRetourAphaOnlyRemettant(positionsToDo).then(data => {
+
+                    });
+                    res.send([positionsConnu.length, positionsConnu]);
+                });
+            } else {
+                res.send("Pas de positions trouvées");
+            }
+        });
 });
 
 app.post('/jp0/regen', (req, res) => {
@@ -202,7 +277,7 @@ app.post('/jp0/regen', (req, res) => {
                 ncp(path.join(pos.documents[0].currentFileLocation, "lds"), `Z:\\lds`, function (err) {
                     if (err) {
                         console.log(new GedError("107", `Déplacement des LDS échoué de ${pos.documents[0].currentFileLocation}/lds`, pos.archiveSource, pos.archiveSource, err, pos.codeEdi, 2, false, ""));
-                    }else{
+                    } else {
                         console.log("Régénération jp0 terminé")
                     }
                 })
@@ -635,7 +710,7 @@ gedRouter.get('/pole/:date', function (req, res) {
             ).catch(() => {
                 console.log("ERROR 3");
                 res.status(500).send("Une erreur est survenue")
-            })!
+            })
         })
     });
 });

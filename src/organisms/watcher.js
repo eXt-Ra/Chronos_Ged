@@ -23,6 +23,7 @@ import fileTypeCheck from "../atoms/fileTypeCheck";
 import generateNomenclature from "../atoms/generateNomenclature";
 import {CronJob} from "cron";
 import fs from "fs";
+import traitRetourApha from "../molecules/traitRetourApha";
 
 const currentSuivi = [];
 export {currentSuivi};
@@ -179,7 +180,7 @@ function treatmentZip(filePath) {
             .then(positions => {
                 changeStatus(id, "Retour");
                 changeProgress(id, 90);
-                return traitRetour(positions);
+                return traitRetourApha(positions);
             })
             .then(() => {
                 changeProgress(id, 100);
@@ -233,7 +234,7 @@ function startTreatmentCalva() {
             }).then(positions => {
                 return archiveFiles(positions);
             }).then(positions => {
-                return traitRetour(positions);
+                return traitRetourApha(positions);
             }).then(() => {
                 //TODO status terminé delete de la bdd
             }).catch(err => {

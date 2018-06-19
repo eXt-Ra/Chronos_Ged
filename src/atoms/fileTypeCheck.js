@@ -10,7 +10,6 @@ export default function fileTypeCheck(file) {
                 resolve(file.substr(file.length - 3))
             }
         }).catch(err => {
-            console.log(err);
             reject(err);
         });
     })

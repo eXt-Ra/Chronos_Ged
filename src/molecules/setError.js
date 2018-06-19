@@ -46,10 +46,10 @@ export default function setError(errObj) {
                                 });
                             });
                             is.on('error', function (err) {
-                                console.log(err);
+                                //console.log(err);
                             });
                             os.on('error', function (err) {
-                                console.log(err);
+                                // console.log(err);
                             });
                         });
                     } else {

@@ -79,9 +79,35 @@ import PositionSchema from './Schema/PositionSchema'
 // });
 
 import cluster from 'cluster'
+import * as async from "async";
 
 if (cluster.isMaster) {
     console.log(`
     ---🤘  Master ${process.pid} is running 🤘---
   `)
 }
+
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array)
+    }
+}
+
+// ["A", "B", "C", "D", "E", "F"].forEach(async (val, index) => {
+//     console.log(val);
+//     console.log(index);
+//     await setTimeout(() => {
+//         console.log("wait");
+//     }, 1000)
+// });
+
+
+// const start = async () => {
+//     await asyncForEach(["A", "B", "C", "D", "E", "F"], async (num, index) => {
+//         console.log(num)
+//         console.log(index)
+//     })
+//     console.log('Done')
+// }
+// start()
+
