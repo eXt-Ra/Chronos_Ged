@@ -8,7 +8,11 @@ export default function traitJpgFileName(documents) {
         const documentsFilter = [];
         documents.forEach((document, index) => {
             if (document.fileName.length > 6) {
-                document.barecode = [document.fileName.substring(0, 7)];
+                if (document.fileName.startsWith("1")) {
+                    document.barecode = [document.fileName.substring(0, 8)];
+                } else {
+                    document.barecode = [document.fileName.substring(0, 7)];
+                }
                 documentsFilter.push(document);
             } else {
                 setError(new GedError("jpgFileName", `nom de fichier trop court ${ document.fileName}`, document.fileName, document.archiveSource, "", document.codeEdi, 2, false))

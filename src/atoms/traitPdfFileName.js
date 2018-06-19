@@ -82,7 +82,12 @@ export default function traitPdf(documents) {
                 const documentsFilter = [];
                 documents.forEach(document => {
                     if (document.fileName.length > 6) {
-                        document.barecode = [document.fileName.substring(0, 7)];
+                        // trait spé pour les positions > 10 000 000
+                        if (document.fileName.startsWith("1")) {
+                            document.barecode = [document.fileName.substring(0, 8)];
+                        } else {
+                            document.barecode = [document.fileName.substring(0, 7)];
+                        }
                         documentsFilter.push(document);
                     } else {
                         setError(new GedError("jpgFileName", `nom de fichier trop court ${ document.fileName}`, document.fileName, document.archiveSource, "", document.codeEdi, 2, false))
