@@ -28,9 +28,13 @@ async function downloadImage(imgToDl, codeEdi, source) {
         axios({
             method: 'GET',
             url: imgToDl.fileUrl,
-            responseType: 'stream'
+            responseType: 'stream',
+            timeout: 30000,
         });
-    const filePath = path.join("output", codeEdi, source !== null ? source.slice(0, -4) : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4), `${imgToDl.numeroEquinoxe}-${imgToDl._id}.${getFileType(response.headers['content-type'])}`);
+    const filePath = path.join("output",
+        codeEdi,
+        source !== null ? source.slice(0, -4) : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4),
+        `${imgToDl.numeroEquinoxe}-${imgToDl._id}.${getFileType(response.headers['content-type'])}`);
     // pipe the result stream into a file on disc
     response.data.pipe(fs.createWriteStream(filePath));
 
@@ -77,6 +81,7 @@ export default function (imagesToDl, codeEdi, source) {
             console.log("start Download");
 
             const outPutDir = path.join("output", codeEdi, source !== null ? source.slice(0, -4) : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4));
+            console.log(outPutDir);
             mkdirp(outPutDir, () => {
                 downloadImage(imgToDl, codeEdi, source).then((document) => {
                     console.log("finish Download");
@@ -84,6 +89,7 @@ export default function (imagesToDl, codeEdi, source) {
                     console.log(`${documents.length}/${imagesToDl.length}`);
                     callback(null);
                 }).catch(err => {
+                    console.log("here")
                     console.log(err);
                     callback();
                 })
