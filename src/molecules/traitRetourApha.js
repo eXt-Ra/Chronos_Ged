@@ -7,17 +7,20 @@ export default function traitRetour(positions) {
         const promiseQ = [];
         positions.forEach(position => {
             if (wantRetour(position.societe)) {
-                promiseQ.push(
-                    function (callback) {
-                        try {
-                            traitFileRetourAlpha(position, position.societe).then(() => {
+                if (position.societe.retour.wantRemettant) {
+                    console.log(`>> Traitement retour pour ${position.societe.codeEdi} en tant que distributeur <<`);
+                    promiseQ.push(
+                        function (callback) {
+                            try {
+                                traitFileRetourAlpha(position, position.societe).then(() => {
+                                    callback(null);
+                                })
+                            } catch (err) {
                                 callback(null);
-                            })
-                        } catch (err) {
-                            callback(null);
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         });
 

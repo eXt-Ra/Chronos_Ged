@@ -86,8 +86,6 @@ export default function traitFileRetourAlpha(position, societe) {
                 });
 
                 // const inputFile = inputArr.join(" ");
-                console.log(`${archiveLocation}${path.join(position.documents[0].currentFileLocation, `${position.numEquinoxe}_cat.${config.fileType}`)}`);
-
                 console.log(config.fileType);
                 switch (config.fileType) {
                     case "pdf":
@@ -96,7 +94,9 @@ export default function traitFileRetourAlpha(position, societe) {
                             .cat([])
                             .output(`${archiveLocation}${path.join(position.documents[0].currentFileLocation, `${position.numEquinoxe}_cat.${config.fileType}`)}`)
                             .then(buffer => {
-                                resolve([path.join(archiveLocation, position.documents[0].currentFileLocation, `${position.numEquinoxe}_cat.${config.fileType}`)]);
+                                setTimeout(() => {
+                                    resolve([path.join(archiveLocation, position.documents[0].currentFileLocation, `${position.numEquinoxe}_cat.${config.fileType}`)]);
+                                }, 1000);
                             })
                             .catch(err => {
                                 reject(new GedError("113", `Error on pdtk cmd de ${position.numEquinoxe}`, "unknown", position.documents[0].archiveSource, err, position.documents[0].codeEdi, 2, false));
@@ -110,7 +110,9 @@ export default function traitFileRetourAlpha(position, societe) {
                                 if (err) {
                                     reject(new GedError("113", `Error on gm cmd de ${position.numEquinoxe}`, "unknown", position.documents[0].archiveSource, err, position.documents[0].codeEdi, 2, false));
                                 } else {
-                                    resolve([path.join(archiveLocation, position.documents[0].currentFileLocation, `${position.numEquinoxe}_cat.${config.fileType}`)]);
+                                    setTimeout(() => {
+                                        resolve([path.join(archiveLocation, position.documents[0].currentFileLocation, `${position.numEquinoxe}_cat.${config.fileType}`)]);
+                                    }, 1000);
                                 }
                             });
                         break;
@@ -233,13 +235,17 @@ export default function traitFileRetourAlpha(position, societe) {
                 os = fs.createWriteStream(to);
             is.pipe(os);
             is.on('end', function () {
-                fs.unlink(from, err => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                });
+
+                setTimeout(() => {
+                    fs.unlink(from, err => {
+                        // if (err) {
+                        //     reject(err);
+                        // } else {
+                        //     resolve();
+                        // }
+                    });
+                }, 3000);
+                resolve();
             });
             is.on('error', function (err) {
                 reject(err);
@@ -262,28 +268,36 @@ export default function traitFileRetourAlpha(position, societe) {
                     if (config.nomenclature.pattern.indexOf("REFTMS") > -1) {
                         refTMS = await getRefTMS(position);
                     }
+
+                    function getRetourFolder(codeEdi) {
+                        switch (codeEdi) {
+                            case "FOURREI":
+                                return "FOURTOU";
+                            case "GAUTFRO":
+                                return "GAUTSAI";
+                            default:
+                                return codeEdi;
+                        }
+                    }
+
                     const fileName = filePath.split(path.sep)[filePath.split(path.sep).length - 1];
-                    const newFilePath = path.join(`${archiveLocation}reception`, societe.codeEdi === "FOURREI" ? "FOURTOU" : societe.codeEdi, "remonte", `${generateNomenclature(config.nomenclature.pattern, position, fileName, refTMS)}${fileName.substr(fileName.length - 4)}`);
-                    try {
-                        await moveTo(
-                            filePath,
-                            newFilePath
-                        );
-                        console.log(`Move ${filePath} to ${newFilePath}`);
-                    }
-                    catch (err) {
-                        throw err;
-                    }
-                    finally {
-                        // callback(null)
-                    }
+                    const newFilePath = path.join(`${archiveLocation}reception`,
+                        getRetourFolder(societe.codeEdi), "remonte",
+                        `${generateNomenclature(config.nomenclature.pattern, position, fileName, refTMS)}${fileName.substr(fileName.length - 4)}`);
+
+                    await moveTo(
+                        filePath,
+                        newFilePath
+                    );
+                    console.log(`Move ${filePath} to ${newFilePath}`);
                 });
             });
             console.log(`Finish traitFileRetourAlpha pour ${position.numEquinoxe} for ${societe.codeEdi}`);
             resolve(fileToMove);
         }
         catch (err) {
-            setError(err)
+            setError(err);
+            resolve();
         }
     });
 }

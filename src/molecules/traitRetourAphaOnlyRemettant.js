@@ -43,6 +43,8 @@ export default function traitRetour(positions) {
                 });
                 async.parallelLimit(promiseQB, 3,
                     function (err, resultsB) {
+                        console.log(`>> Nb positions ${positions.length}`);
+                        console.log(`>> Nb promiseQ ${promiseQB.length}`);
                         console.log("finish retour");
                         resolve(results.concat(resultsB));
                     });
