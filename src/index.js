@@ -16,9 +16,14 @@ mongoose.Promise = Promise;
 
 // generateOldGed(8789740);
 //
-import PositionSchema from './Schema/PositionSchema'
+// import PositionSchema from './Schema/PositionSchema'
+// console.log("ISTART")
 // PositionSchema.find({
+//   "dateTreatment": {
+// 	"$gte": "2018-05-01",
+//   }
 // }).then(positions => {
+//     console.log(positions.length)
 //     positions.forEach(position => {
 //         position.docs.forEach(document =>{
 //             console.log(document.currentFileLocation);
@@ -36,20 +41,20 @@ import PositionSchema from './Schema/PositionSchema'
 // // numEquinoxe: "8215296"
 // // numEquinoxe: "8778839"
 // PositionSchema.find({}).then(positions => {
-//     // (position => {
-//     // position.docs.forEach(document =>{
-//     //     console.log(document.currentFileLocation);
-//     //     document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
-//     //     console.log(document.currentFileLocation);
-//     // });
-//     // position.markModified('docs');
-//     // console.log("success");
-//     // position.save();
-//     // const arr = positions.docs.filter((thing, index, self) =>
-//     //     index === self.findIndex((t) => {
-//     //         return t.fileName === thing.fileName && t.archiveSource === thing.archiveSource
-//     //     })
-//     // );
+    // (position => {
+    // position.docs.forEach(document =>{
+    //     console.log(document.currentFileLocation);
+    //     document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
+    //     console.log(document.currentFileLocation);
+    // });
+    // position.markModified('docs');
+    // console.log("success");
+    // position.save();
+    // const arr = positions.docs.filter((thing, index, self) =>
+    //     index === self.findIndex((t) => {
+    //         return t.fileName === thing.fileName && t.archiveSource === thing.archiveSource
+    //     })
+    // );
 //
 //     const dupli = [];
 //     positions.forEach(position => {
