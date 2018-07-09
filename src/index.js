@@ -17,10 +17,10 @@ mongoose.Promise = Promise;
 // generateOldGed(8789740);
 //
 // import PositionSchema from './Schema/PositionSchema'
-// console.log("ISTART")
+// console.log("ISTART");
 // PositionSchema.find({
 //   "dateTreatment": {
-// 	"$gte": "2018-05-01",
+// 	"$gte": "2018-06-01",
 //   }
 // }).then(positions => {
 //     console.log(positions.length)
