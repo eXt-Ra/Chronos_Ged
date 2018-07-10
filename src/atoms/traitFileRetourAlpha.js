@@ -219,7 +219,7 @@ export default function traitFileRetourAlpha(position, societe) {
 			  //.compress("JPEG")
 			  // .density(400, 400)
 			  // .resize('25%')
-			  // .bitdepth(8)
+			  .bitdepth(8)
 			  .write(outputFile, function (err) {
 				if (err) {
 				  reject(err);
