@@ -59,9 +59,12 @@ export default function diffMongoMysql(date) {
 				pos.remettant = position.remettant;
 				pos.numeroDoc = position.numeroDoc;
 				position.docs.forEach(doc => {
+				  doc.currentFileLocation = doc.currentFileLocation.replace("output", "archive");
 				  const newDoc = new Document(doc.codeEdi, position.societe, doc.archiveSource, path.join("Z:", doc.currentFileLocation, doc.fileName));
 				  pos.documents.push(newDoc);
 				});
+				position.markModified('docs');
+				position.save();
 				positions.push(pos);
 			  }
 			  callback();
