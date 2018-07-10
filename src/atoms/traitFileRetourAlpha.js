@@ -10,6 +10,8 @@ import mkdirp from "mkdirp";
 import * as async from "async";
 
 import pdftk from "node-pdftk";
+import PositionSchema from "../Schema/PositionSchema";
+import SocieteSchema from "../Schema/SocieteSchema";
 
 async function asyncForEach(array, callback) {
   for (let index = 0; index < array.length; index++) {
@@ -86,7 +88,6 @@ export default function traitFileRetourAlpha(position, societe) {
 		});
 
 		// const inputFile = inputArr.join(" ");
-		console.log(config.fileType);
 		switch (config.fileType) {
 		  case "pdf":
 			pdftk
@@ -317,13 +318,72 @@ export default function traitFileRetourAlpha(position, societe) {
 			  filePath,
 			  newFilePath
 		  );
+
 		  console.log(`Move ${filePath} to ${newFilePath}`);
 		});
 	  });
+
+	  if (position.remettant.codeEdi === societe.codeEdi) {
+		PositionSchema.update({
+			  "numEquinoxe": position.numEquinoxe
+			}, {
+			  $set: {
+				'state.retourRemettant': true
+			  }
+			},
+			function (err, model) {
+			  if (err) {
+				console.log(err);
+			  }
+			});
+	  } else {
+		PositionSchema.update({
+			  "numEquinoxe": position.numEquinoxe
+			}, {
+			  $set: {
+				'state.retourDistributeur': true
+			  }
+			},
+			function (err, model) {
+			  if (err) {
+				console.log(err);
+			  }
+			});
+	  }
+
 	  console.log(`Finish traitFileRetourAlpha pour ${position.numEquinoxe} for ${societe.codeEdi}`);
 	  resolve(fileToMove);
 	}
 	catch (err) {
+	  if (position.remettant.codeEdi === societe.codeEdi) {
+		PositionSchema.update({
+			  "numEquinoxe": position.numEquinoxe
+			}, {
+			  $set: {
+				'state.retourRemettant': false
+			  }
+			},
+			function (err, model) {
+			  if (err) {
+				console.log(err);
+			  }
+			});
+	  } else {
+		PositionSchema.update({
+			  "numEquinoxe": position.numEquinoxe
+			}, {
+			  $set: {
+				'state.retourDistributeur': false
+			  }
+			},
+			function (err, model) {
+			  if (err) {
+				console.log(err);
+			  }
+			});
+	  }
+	  console.log("PLOOOOOOFFFFFF");
+	  throw err;
 	  setError(err);
 	  resolve();
 	}

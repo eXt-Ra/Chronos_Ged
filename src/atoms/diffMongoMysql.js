@@ -27,7 +27,8 @@ export default function diffMongoMysql(date) {
 		  } else {
 			connection.query(`select val4 from STOCKDOC where val4 ='${position.numEquinoxe}'`, function (err, lines) {
 			  if (err) {
-				throw err;
+				// throw err;
+				console.log(err);
 			  } else {
 				if (lines.length > 0) {
 				  // console.log(`found ${position.numEquinoxe}`)
@@ -42,10 +43,7 @@ export default function diffMongoMysql(date) {
 		  }
 		});
 	  }, function (err) {
-		// if any of the file processing produced an error, err would equal that error
 		if (err) {
-		  // One of the iterations produced an error.
-		  // All processing will now stop.
 		  console.log('A file failed to process');
 		} else {
 		  console.log(`Nb positions select ${positions.length}`);
