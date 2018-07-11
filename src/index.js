@@ -2,12 +2,19 @@ import './organisms/watcher';
 import './api'
 
 require("./connmongo")();
+
+import {start, sendMail} from './organisms/mailer'
+
+start();
+
+
 // Use native promises
 import mongoose from "mongoose";
 import PositionMongo from "./Schema/PositionSchema";
 import GedError from "./Class/GedError";
 import ErrorBot from "./organisms/errorBot";
 import generateOldGed from "./molecules/generateOldGed";
+
 
 mongoose.Promise = Promise;
 
@@ -41,20 +48,20 @@ mongoose.Promise = Promise;
 // // numEquinoxe: "8215296"
 // // numEquinoxe: "8778839"
 // PositionSchema.find({}).then(positions => {
-    // (position => {
-    // position.docs.forEach(document =>{
-    //     console.log(document.currentFileLocation);
-    //     document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
-    //     console.log(document.currentFileLocation);
-    // });
-    // position.markModified('docs');
-    // console.log("success");
-    // position.save();
-    // const arr = positions.docs.filter((thing, index, self) =>
-    //     index === self.findIndex((t) => {
-    //         return t.fileName === thing.fileName && t.archiveSource === thing.archiveSource
-    //     })
-    // );
+// (position => {
+// position.docs.forEach(document =>{
+//     console.log(document.currentFileLocation);
+//     document.currentFileLocation = document.currentFileLocation.replace("output", "archive");
+//     console.log(document.currentFileLocation);
+// });
+// position.markModified('docs');
+// console.log("success");
+// position.save();
+// const arr = positions.docs.filter((thing, index, self) =>
+//     index === self.findIndex((t) => {
+//         return t.fileName === thing.fileName && t.archiveSource === thing.archiveSource
+//     })
+// );
 //
 //     const dupli = [];
 //     positions.forEach(position => {
@@ -86,16 +93,19 @@ mongoose.Promise = Promise;
 import cluster from 'cluster'
 import * as async from "async";
 
+import organisms from "./organisms/mailer";
+import errorMail from "./View/Mail/ErrorMail";
+
 if (cluster.isMaster) {
-    console.log(`
+  console.log(`
     ---🤘  Master ${process.pid} is running 🤘---
   `)
 }
 
 async function asyncForEach(array, callback) {
-    for (let index = 0; index < array.length; index++) {
-        await callback(array[index], index, array)
-    }
+  for (let index = 0; index < array.length; index++) {
+	await callback(array[index], index, array)
+  }
 }
 
 // ["A", "B", "C", "D", "E", "F"].forEach(async (val, index) => {

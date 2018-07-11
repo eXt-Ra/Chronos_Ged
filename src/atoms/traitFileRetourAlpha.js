@@ -382,8 +382,6 @@ export default function traitFileRetourAlpha(position, societe) {
 			  }
 			});
 	  }
-	  console.log("PLOOOOOOFFFFFF");
-	  throw err;
 	  setError(err);
 	  resolve();
 	}

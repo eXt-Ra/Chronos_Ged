@@ -41,7 +41,7 @@ export default function createLdsAndJpg0(positions) {
 			  mkdirp(path.join(document.currentFileLocation, "lds"), () => {
 				fs.writeFile(path.join(document.currentFileLocation, "lds", `${document.fileNameNoExt}.lds`), dataLds, (err) => {
 				  if (err) {
-					setError(new GedError("105", `Creation LDS échoué ${ document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false, dataLds));
+					setError(new GedError("105", `Creation LDS échoué ${document.fileName}`, document.fileName, document.archiveSource, err, document.codeEdi, 2, false), position);
 					callback(null);
 				  } else {
 					fileTypeCheck(document.filePath).then(type => {
