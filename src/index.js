@@ -7,7 +7,10 @@ import {start, sendMail} from './organisms/mailer'
 
 start();
 
-
+// sendMail(errorMail({
+//   code: "666",
+//   codeEdi: "RODIGEN"
+// }));
 // Use native promises
 import mongoose from "mongoose";
 import PositionMongo from "./Schema/PositionSchema";

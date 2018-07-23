@@ -52,6 +52,7 @@ import setError from "./molecules/setError";
 import mkdirp from "mkdirp";
 import traitFileRetourAlpha from "./atoms/traitFileRetourAlpha";
 import diffMongoMysql from "./atoms/diffMongoMysql";
+import checkManquantretour from "./atoms/checkManquantretour";
 
 const urlCrypt = url_crypt('~{ry*I)==yU/]9<7DPk!Hj"R#:-/Z7(hTBnlRS=4CXF');
 
@@ -165,11 +166,20 @@ app.get('/retour/regen', (req, res) => {
 		}
 	  })
 });
-app.get('/checkStockdoc', (req, res) => {
-  diffMongoMysql().then((result) => {
+
+app.get('/checkStockdoc/:date', (req, res) => {
+  diffMongoMysql(moment(req.params.date).format()).then((result) => {
 	res.send(result);
   })
 });
+
+
+app.get('/checkManquant/:date', (req, res) => {
+  checkManquantretour(moment(req.params.date).format()).then((result) => {
+	res.send(result);
+  })
+});
+
 app.post('/retour/multiregen', (req, res) => {
   const positionsToDo = [];
   const positionsInconnu = [];

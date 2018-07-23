@@ -13,6 +13,7 @@ var ncp = require('ncp').ncp;
 ncp.limit = 16;
 
 export default function diffMongoMysql(date) {
+  const resultPos = [];
   return new Promise((resolve, reject) => {
 	PositionSchema.find({
 	  "dateTreatment": {
@@ -63,34 +64,38 @@ export default function diffMongoMysql(date) {
 				});
 				position.markModified('docs');
 				position.save();
-				positions.push(pos);
+				resultPos.push(pos);
 			  }
 			  callback();
 			})
 		  }, function () {
 			console.log("STSRATATA");
-			createLdsAndJpg0(positions).then(data => {
-			  positions.forEach(pos => {
+			createLdsAndJpg0(resultPos).then(data => {
+			  resultPos.forEach(pos => {
 				ncp(path.join(pos.documents[0].currentFileLocation, "lds"), `Z:\\lds`, function (err) {
 				  if (err) {
-					console.log(new GedError("107", `Déplacement des LDS échoué de ${pos.documents[0].currentFileLocation}/lds`, pos.archiveSource, pos.archiveSource, err, pos.codeEdi, 2, false, ""));
+					err._error.forEach(errT => {
+					  if (errT.syscall !== "unlink") {
+						console.log(new GedError("107", `Déplacement des LDS échoué de ${pos.documents[0].currentFileLocation}/lds`, pos.archiveSource, pos.archiveSource, err, pos.codeEdi, 2, false, ""));
+					  }
+					});
 				  } else {
 					console.log("Régénération jp0 terminé")
 				  }
 				})
 			  });
+			  resolve("Régénération jp0 terminé");
 			}).catch(err => {
 			  console.log(err);
 			});
 		  });
-		  // fs.writeFile("./resultDiff.json", JSON.stringify(result), (err) => {
-		  // if (err) {
-		  //   console.error(err);
-		  //   return;
-		  // }
-		  // ;
-		  // console.log("File has been created");
-		  // });
+		  fs.writeFile(path.join("report", `resultDiff${moment().format("DDMMYYHHMMSS")}.json`), JSON.stringify(result), (err) => {
+			if (err) {
+			  console.error(err);
+			  return;
+			}
+			console.log("File has been created");
+		  });
 		}
 	  });
 	});

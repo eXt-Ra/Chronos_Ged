@@ -1,7 +1,7 @@
 export default (err) => {
   return {
 	from: "\"server Chronos\" <chronos.ged@gmail.com>", // sender address
-	to: "vanardois.romain@gmail.com", // list of receivers
+	to: "rvanardois@dealtis.fr, aregazzoni@dealtis.fr", // list of receivers
 	subject: `GERR-${err.code}-${err.codeEdi}`,
 	text: "ERROR DCS",
 	/*eslint-disable */

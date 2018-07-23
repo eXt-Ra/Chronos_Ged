@@ -5,6 +5,7 @@ import _ from 'lodash'
 import GedError from "../Class/GedError";
 import setError from "./setError";
 import * as path from "path";
+import moment from "moment/moment";
 
 const exec = require('child_process').exec;
 
@@ -34,7 +35,9 @@ function findPoleBarcode(documents) {
   return new Promise((resolve, reject) => {
 	const postDocumentsFilepath = [];
 	documents.forEach(doc => {
-	  postDocumentsFilepath.push(doc.filePath);
+	  // if (!doc.filepath.includes("Thumbs.db")) {
+		postDocumentsFilepath.push(doc.filePath);
+	  // }
 	});
 	axios.post(`http://localhost/inlite/api/inlite`, {
 	  documents: postDocumentsFilepath,

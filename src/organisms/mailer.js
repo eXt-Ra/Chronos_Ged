@@ -11,9 +11,8 @@ const smtpConfig = {
 };
 
 let transporter = nodemailer.createTransport(smtpConfig);
+
 function start() {
-
-
   transporter.verify(function (error, success) {
 	if (error) {
 	  console.log(error);
@@ -22,7 +21,6 @@ function start() {
 	}
   });
 };
-
 
 function sendMail(mail) {
   return new Promise((resolve, reject) => {

@@ -26,6 +26,7 @@ import fs from "fs";
 import traitRetourApha from "../molecules/traitRetourApha";
 import moment from "moment/moment";
 import diffMongoMysql from "../atoms/diffMongoMysql";
+import checkManquantretour from "../atoms/checkManquantretour";
 
 const currentSuivi = [];
 export {currentSuivi};
@@ -96,8 +97,11 @@ const jobMissZip = new CronJob('0 */60 * * * *', function () {
 
 const jobMissInStockdoc = new CronJob('00 30 23 * * 1-5', function () {
   console.log("RUN CRON jobMissInStockdoc");
-  diffMongoMysql(moment().format("YYYY-MM-DD"))
+  diffMongoMysql(moment().format("YYYY-MM-DD"));
+  checkManquantretour(moment().format("YYYY-MM-DD").subtract(1, "days"));
 }, null, false, 'Europe/Paris');
+
+jobMissInStockdoc.start();
 
 initFoler().then((results) => {
   watcher = chokidar.watch(results, {

@@ -48,6 +48,7 @@ export default function traitFileRetourAlpha(position, societe) {
 			  copyFile = await duplicateFile(
 				  path.join(`${archiveLocation}`, document.filePath),
 				  path.join(`${archiveLocation}`, document.currentFileLocation, `${index}${document.fileNameNoExt}_dup${document.fileName.substr(document.fileName.length - 4)}`),
+				  type
 			  );
 			  stackFile.push(copyFile);
 			}
@@ -121,7 +122,6 @@ export default function traitFileRetourAlpha(position, societe) {
 		  default:
 			reject(new GedError("104", `Erreur fichier non supporté`, "unknown", position.documents[0].archiveSource, "", position.documents[0].codeEdi, 3, false));
 		}
-
 	  } else {
 		resolve(stackFile)
 	  }
@@ -236,17 +236,67 @@ export default function traitFileRetourAlpha(position, societe) {
 	})
   }
 
-  function duplicateFile(source, copy) {
+  function duplicateFile(source, copy, fileType) {
+	// return new Promise((resolve, reject) => {
+	//   fs.copy(
+	// 	  source,
+	// 	  copy,
+	// 	  err => {
+	// 		if (err) {
+	// 		  reject(err);
+	// 		}
+	// 		resolve(copy);
+	// 	  })
+	// })
 	return new Promise((resolve, reject) => {
-	  fs.copy(
-		  source,
-		  copy,
-		  err => {
-			if (err) {
-			  reject(err);
+	  switch (fileType) {
+		case "jpg":
+		  fs.copy(
+			  source,
+			  copy,
+			  err => {
+				if (err) {
+				  reject(err);
+				}
+				resolve(copy);
+			  });
+		  break;
+		case "pdf":
+		  fs.stat(source, (err, stats) => {
+			console.log(`Fichier source pdf size = ${stats.size}`);
+			if (stats.size > 1500000) {
+			  console.log("Compress");
+			  gm(source)
+				  .quality(92)
+				  //.compress("JPEG")
+				  .density(400, 400)
+				  .resize('25%')
+				  .write(copy, function (err) {
+					if (err) {
+					  reject(err);
+					} else {
+					  resolve(copy);
+					}
+				  });
+			} else {
+			  console.log("Duplicate");
+			  fs.copy(
+				  source,
+				  copy,
+				  err => {
+					if (err) {
+					  reject(err);
+					}
+					resolve(copy);
+				  });
 			}
-			resolve(copy);
-		  })
+		  });
+
+		  break;
+		default:
+		  reject(`Erreur fichier non supporté`);
+		  return;
+	  }
 	})
   }
 

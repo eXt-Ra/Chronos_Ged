@@ -41,7 +41,10 @@ function regenLdsJp0(self) {
 					}
 				  });
 
-			  //TODO ENVOI DE MAIL
+			  sendMail(errorMail({
+				code: self.errObj.type,
+				codeEdi: self.errObj.codeEdi
+			  }));
 			} else {
 			  ErrorSchema.update({
 					"_id": self.dbErrorID
@@ -146,6 +149,7 @@ const errorProcess = [{
   code: "117",
   fnc: () => {
 	//retry du traitement du fichier
+
   }
 }, {
   code: "118",
@@ -153,46 +157,55 @@ const errorProcess = [{
 	//retry du copy du fichier pour geodis
   }
 }, {
-  code: "402",
+  code: "120",
   fnc: (self) => {
 	sendMail(errorMail({
-	  code: "402",
+	  code: "120",
 	  codeEdi: self.errObj.codeEdi
 	}));
   }
-}, {
-  code: "403",
-  fnc: (self) => {
-	sendMail(errorMail({
-	  code: "403",
-	  codeEdi: self.errObj.codeEdi
-	}));
-  }
-}, {
-  code: "404",
-  fnc: (self) => {
-	sendMail(errorMail({
-	  code: "404",
-	  codeEdi: self.errObj.codeEdi
-	}));
-  }
-}, {
-  code: "405",
-  fnc: (self) => {
-	sendMail(errorMail({
-	  code: "405",
-	  codeEdi: self.errObj.codeEdi
-	}));
-  }
-}, {
-  code: "406",
-  fnc: (self) => {
-	sendMail(errorMail({
-	  code: "406",
-	  codeEdi: self.errObj.codeEdi
-	}));
-  }
-}];
+},
+  {
+	code: "402",
+	fnc: (self) => {
+	  sendMail(errorMail({
+		code: "402",
+		codeEdi: self.errObj.codeEdi
+	  }));
+	}
+  }, {
+	code: "403",
+	fnc: (self) => {
+	  sendMail(errorMail({
+		code: "403",
+		codeEdi: self.errObj.codeEdi
+	  }));
+	}
+  }, {
+	code: "404",
+	fnc: (self) => {
+	  sendMail(errorMail({
+		code: "404",
+		codeEdi: self.errObj.codeEdi
+	  }));
+	}
+  }, {
+	code: "405",
+	fnc: (self) => {
+	  sendMail(errorMail({
+		code: "405",
+		codeEdi: self.errObj.codeEdi
+	  }));
+	}
+  }, {
+	code: "406",
+	fnc: (self) => {
+	  sendMail(errorMail({
+		code: "406",
+		codeEdi: self.errObj.codeEdi
+	  }));
+	}
+  }];
 
 export default class ErrorBot {
 
