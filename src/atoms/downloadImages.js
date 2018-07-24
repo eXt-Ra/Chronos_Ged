@@ -26,61 +26,56 @@ function getFileType(contentType) {
 
 async function downloadImage(imgToDl, codeEdi, source) {
 
-  const response = await
-	  axios({
+  // return a promise and resolve when download finishes
+  return new Promise(async (resolve, reject) => {
+
+	try {
+	  const response = await axios({
 		method: 'GET',
 		url: imgToDl.fileUrl,
 		responseType: 'stream',
 		timeout: 30000,
 	  });
-  const filePath = path.join("output",
-	  codeEdi,
-	  source !== null ? source.slice(0, -4) : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4),
-	  `${imgToDl.numeroEquinoxe}-${imgToDl._id}.${getFileType(response.headers['content-type'])}`);
-  // pipe the result stream into a file on disc
-  response.data.pipe(fs.createWriteStream(filePath));
 
-  // return a promise and resolve when download finishes
-  return new Promise((resolve, reject) => {
-	response.data.on('end', () => {
-	  SocieteMongo.findOne({
-		codeEdi: imgToDl.codeEdi
-	  }).then((societe) => {
-		if (societe != null) {
-		  // if (filePath.substr(filePath.length - 3) === "pdf") {
-		  // gm(filePath)
-		  // 	.quality(92)
-		  // 	.density(400, 400)
-		  // 	.resize('25%')
-		  // 	.write(filePath.replace("pdf", "jpg"), function (err) {
-		  // 	  if (err) {
-		  // 		reject(`Convert gm pdf > jpf fail pour ${filePath}`);
-		  // 	  } else {
-		  // 		const newDoc = new Document(imgToDl.codeEdi, societe, source !== null ? source : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1], filePath.replace("pdf", "jpg"));
-		  // 		newDoc.barecode = [`POLE${imgToDl.numeroEquinoxe}`];
-		  // 		resolve(newDoc);
-		  // 	  }
-		  // 	});
-		  // } else {
-		  const newDoc = new Document(imgToDl.codeEdi, societe, source !== null ? source : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1], filePath);
-		  newDoc.barecode = [`POLE${imgToDl.numeroEquinoxe}`];
-		  resolve(newDoc);
-		  // }
-		} else {
-		  // reject(new GedError("DB", `Societe introuvable pour le codeEdi ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
-		  reject(`Societe introuvable pour le codeEdi ${imgToDl.codeEdi}`);
-		}
-	  }).catch(err => {
-		if (err) {
-		  // reject(new GedError("DB", `Erreur lors de l'acces MongoDB pour la recherche de societe ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
-		  reject(`Societe introuvable pour le codeEdi ${imgToDl.codeEdi}`);
-		}
+	  if (imgToDl.numeroEquinoxe.includes("/")) {
+		reject(`mauvais numéro equinoxe ${imgToDl.numeroEquinoxe}`);
+	  }
+
+	  const filePath = path.join("output",
+		  codeEdi,
+		  source !== null ? source.slice(0, -4) : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1].slice(0, -4),
+		  `${imgToDl.numeroEquinoxe}-${imgToDl._id}.${getFileType(response.headers['content-type'])}`);
+	  // pipe the result stream into a file on disc
+	  response.data.pipe(fs.createWriteStream(filePath));
+
+	  response.data.on('end', () => {
+		SocieteMongo.findOne({
+		  codeEdi: imgToDl.codeEdi
+		}).then((societe) => {
+		  if (societe != null) {
+			const newDoc = new Document(imgToDl.codeEdi, societe, source !== null ? source : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1], filePath);
+			newDoc.barecode = [`POLE${imgToDl.numeroEquinoxe}`];
+			resolve(newDoc);
+		  } else {
+			// reject(new GedError("DB", `Societe introuvable pour le codeEdi ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
+			reject(`Societe introuvable pour le codeEdi ${imgToDl.codeEdi}`);
+		  }
+		}).catch(err => {
+		  if (err) {
+			// reject(new GedError("DB", `Erreur lors de l'acces MongoDB pour la recherche de societe ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
+			reject(`Societe introuvable pour le codeEdi ${imgToDl.codeEdi}`);
+		  }
+		});
 	  });
-	});
 
-	response.data.on('error', () => {
-	  reject()
-	})
+	  response.data.on('error', () => {
+		reject()
+	  })
+	}
+	catch (err) {
+	  console.log(err);
+	  reject(err);
+	}
   });
 }
 

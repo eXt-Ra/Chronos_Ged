@@ -27,6 +27,7 @@ import traitRetourApha from "../molecules/traitRetourApha";
 import moment from "moment/moment";
 import diffMongoMysql from "../atoms/diffMongoMysql";
 import checkManquantretour from "../atoms/checkManquantretour";
+import Document from "../Class/Document";
 
 const currentSuivi = [];
 export {currentSuivi};
@@ -98,7 +99,7 @@ const jobMissZip = new CronJob('0 */60 * * * *', function () {
 const jobMissInStockdoc = new CronJob('00 30 23 * * 1-5', function () {
   console.log("RUN CRON jobMissInStockdoc");
   diffMongoMysql(moment().format("YYYY-MM-DD"));
-  checkManquantretour(moment().format("YYYY-MM-DD").subtract(1, "days"));
+  checkManquantretour(moment().subtract(1, "days").format("YYYY-MM-DD"));
 }, null, false, 'Europe/Paris');
 
 jobMissInStockdoc.start();
@@ -125,6 +126,59 @@ function treatmentZip(filePath) {
   const zipName = filePath.split(path.sep)[filePath.split(path.sep).length - 1].substring(0, filePath.split(path.sep)[filePath.split(path.sep).length - 1].length - 4);
   const id = `${codeEdi}_${zipName}`;
   console.log(`File ${filePath} has been added`);
+  if (_.endsWith(filePath, '.XML') || _.endsWith(filePath, '.xml')) {
+	const arrSplit = filePath.split(path.sep);
+	const societe = arrSplit[arrSplit.length - 3];
+	const zipSource = arrSplit[arrSplit.length - 1];
+	traitFiles([new Document(codeEdi, societe, zipSource, filePath)])
+		.then(documents => {
+		  if (documents[1].length > 0) {
+			return readBarcode(documents[1]);
+		  } else {
+			return Promise.reject("NOWAGOUDA");
+		  }
+		})
+		.then(documents => {
+		  if (documents.length > 0) {
+			return traitBarcode(documents);
+		  } else {
+			return Promise.reject(new GedError("403", `Stop after readBarcodes pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after readBarcodes", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+		  }
+		})
+		.then(positions => {
+		  if (positions.length > 0) {
+			return savePositionsDB(positions);
+		  } else {
+			return Promise.reject(new GedError("404", `Stop after traitBarcode pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after traitBarcode", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+		  }
+		})
+		.then(positions => {
+		  if (positions.length > 0) {
+			return createLdsAndJpg0(positions);
+		  } else {
+			return Promise.reject(new GedError("405", `Stop after savePositionsDB pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after savePositionsDB", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+		  }
+		})
+		.then(positions => {
+		  if (positions.length > 0) {
+			return archiveFiles(positions, true);
+		  } else {
+			return Promise.reject(new GedError("406", `Stop after createLdsAndJpg0 pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after createLdsAndJpg0", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+		  }
+		})
+		.then(positions => {
+		  return traitRetourApha(positions);
+		})
+		.catch(err => {
+		  if (err !== "NOWAGOUDA") {
+			//error handler
+			console.log("Good error handling");
+			console.log(err);
+			setError(err);
+		  }
+		})
+  }
+
   if (_.endsWith(filePath, '.zip')) {
 	addSuivi(new Suivi(codeEdi, filePath.split(path.sep)[filePath.split(path.sep).length - 1]));
 	changeStatus(id, "Unzipper");
@@ -183,7 +237,7 @@ function treatmentZip(filePath) {
 		  if (positions.length > 0) {
 			changeStatus(id, "Archivage");
 			changeProgress(id, 80);
-			return archiveFiles(positions);
+			return archiveFiles(positions, true);
 		  } else {
 			changeStatus(id, "Error CreateLdsAndJpg0");
 			return Promise.reject(new GedError("406", `Stop after createLdsAndJpg0 pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after createLdsAndJpg0", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
@@ -244,7 +298,7 @@ function startTreatmentCalva() {
 	  }).then(positions => {
 		return createLdsAndJpg0(positions);
 	  }).then(positions => {
-		return archiveFiles(positions);
+		return archiveFiles(positions, true);
 	  }).then(positions => {
 		return traitRetourApha(positions);
 	  }).then(() => {
