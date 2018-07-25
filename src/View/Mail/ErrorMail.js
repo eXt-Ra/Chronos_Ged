@@ -260,7 +260,7 @@ a[x-apple-data-detectors=true] {
                     <div class="">
 	<!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding-right: 30px; padding-left: 30px; padding-top: 20px; padding-bottom: 15px;"><![endif]-->
 	<div style="color:#555555;font-family:Georgia, Times, 'Times New Roman', serif;line-height:120%; padding-right: 30px; padding-left: 30px; padding-top: 20px; padding-bottom: 15px;">	
-		<div style="font-family:Georgia, Times, 'Times New Roman', serif;font-size:12px;line-height:14px;color:#555555;text-align:left;"><p style="margin: 0;font-size: 12px;line-height: 14px;text-align: center"><em><span style="font-size: 34px; line-height: 40px;">Erreur pour ${err.code} pour ${err.codeEdi}</span></em></p></div>	
+		<div style="font-family:Georgia, Times, 'Times New Roman', serif;font-size:12px;line-height:14px;color:#555555;text-align:left;"><p style="margin: 0;font-size: 12px;line-height: 14px;text-align: center"><em><span style="font-size: 34px; line-height: 40px;">${err.message}</span></em></p></div>	
 	</div>
 	<!--[if mso]></td></tr></table><![endif]-->
 </div>

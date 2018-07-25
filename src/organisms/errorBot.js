@@ -43,7 +43,8 @@ function regenLdsJp0(self) {
 
 			  sendMail(errorMail({
 				code: self.errObj.type,
-				codeEdi: self.errObj.codeEdi
+				codeEdi: self.errObj.codeEdi,
+				message : self.errObj.message
 			  }));
 			} else {
 			  ErrorSchema.update({
@@ -161,51 +162,65 @@ const errorProcess = [{
   fnc: (self) => {
 	sendMail(errorMail({
 	  code: "120",
-	  codeEdi: self.errObj.codeEdi
+	  codeEdi: self.errObj.codeEdi,
+	  message : self.errObj.message
 	}));
   }
-},
-  {
-	code: "402",
-	fnc: (self) => {
-	  sendMail(errorMail({
-		code: "402",
-		codeEdi: self.errObj.codeEdi
-	  }));
-	}
-  }, {
-	code: "403",
-	fnc: (self) => {
-	  sendMail(errorMail({
-		code: "403",
-		codeEdi: self.errObj.codeEdi
-	  }));
-	}
-  }, {
-	code: "404",
-	fnc: (self) => {
-	  sendMail(errorMail({
-		code: "404",
-		codeEdi: self.errObj.codeEdi
-	  }));
-	}
-  }, {
-	code: "405",
-	fnc: (self) => {
-	  sendMail(errorMail({
-		code: "405",
-		codeEdi: self.errObj.codeEdi
-	  }));
-	}
-  }, {
-	code: "406",
-	fnc: (self) => {
-	  sendMail(errorMail({
-		code: "406",
-		codeEdi: self.errObj.codeEdi
-	  }));
-	}
-  }];
+}, {
+  code: "204",
+  fnc: (self) => {
+	sendMail(errorMail({
+	  code: "204",
+	  codeEdi: self.errObj.codeEdi,
+	  message : self.errObj.message
+	}));
+  }
+}, {
+  code: "402",
+  fnc: (self) => {
+	sendMail(errorMail({
+	  code: "402",
+	  codeEdi: self.errObj.codeEdi,
+	  message : self.errObj.message
+	}));
+  }
+}, {
+  code: "403",
+  fnc: (self) => {
+	sendMail(errorMail({
+	  code: "403",
+	  codeEdi: self.errObj.codeEdi,
+	  message : self.errObj.message
+	}));
+  }
+}, {
+  code: "404",
+  fnc: (self) => {
+	sendMail(errorMail({
+	  code: "404",
+	  codeEdi: self.errObj.codeEdi,
+	  message : self.errObj.message
+	}));
+  }
+}, {
+  code: "405",
+  fnc: (self) => {
+	sendMail(errorMail({
+	  code: "405",
+	  codeEdi: self.errObj.codeEdi,
+	  message : self.errObj.message
+	}));
+  }
+}, {
+  code: "406",
+  fnc: (self) => {
+	sendMail(errorMail({
+	  code: "406",
+	  codeEdi: self.errObj.codeEdi,
+	  message : self.errObj.message
+	}));
+  }
+}];
 
 export default class ErrorBot {
 
