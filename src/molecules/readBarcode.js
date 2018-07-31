@@ -46,7 +46,7 @@ function findPoleBarcode(documents) {
 	  resolve(res.data);
 	}).catch(err => {
 	  console.log(err);
-	  setError(new GedError("300", `Erreur lors du axios de ${documents[0].fileName}`, documents[0].fileName, documents[0].archiveSource, "erreur Inlite", documents[0].codeEdi, 2, false))
+	  setError(new GedError("300", `Erreur lors du axios de ${documents[0].fileName}`, documents[0].fileName, documents[0].archiveSource, err, documents[0].codeEdi, 2, false))
 	  reject();
 	})
   });

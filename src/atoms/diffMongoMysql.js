@@ -74,11 +74,16 @@ export default function diffMongoMysql(date) {
 			  resultPos.forEach(pos => {
 				ncp(path.join(pos.documents[0].currentFileLocation, "lds"), `Z:\\lds`, function (err) {
 				  if (err) {
-					err._error.forEach(errT => {
-					  if (errT.syscall !== "unlink") {
-						console.log(new GedError("107", `Déplacement des LDS échoué de ${pos.documents[0].currentFileLocation}/lds`, pos.archiveSource, pos.archiveSource, err, pos.codeEdi, 2, false, ""));
-					  }
-					});
+				    try {
+					  err._error.forEach(errT => {
+						if (errT.syscall !== "unlink") {
+						  console.log(new GedError("107", `Déplacement des LDS échoué de ${pos.documents[0].currentFileLocation}/lds`, pos.archiveSource, pos.archiveSource, err, pos.codeEdi, 2, false, ""));
+						}
+					  });
+				    }
+				    catch(err) {
+				        console.log(err)
+				    }
 				  } else {
 					console.log("Régénération jp0 terminé")
 				  }

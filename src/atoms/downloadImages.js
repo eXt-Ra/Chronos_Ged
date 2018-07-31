@@ -34,11 +34,12 @@ async function downloadImage(imgToDl, codeEdi, source) {
 		method: 'GET',
 		url: imgToDl.fileUrl,
 		responseType: 'stream',
-		timeout: 30000,
+		timeout: 120000,
 	  });
 
 	  if (imgToDl.numeroEquinoxe.includes("/")) {
 		reject(`mauvais numéro equinoxe ${imgToDl.numeroEquinoxe}`);
+		return;
 	  }
 
 	  const filePath = path.join("output",
@@ -103,6 +104,7 @@ export default function (imagesToDl, codeEdi, source) {
 		  callback(null);
 		}).catch(err => {
 		  console.log(err);
+		  setError(new GedError("121",`Erreur lors du téléchargement de l'url ${imgToDl.fileUrl}`,"unknown",source,err, codeEdi,1, false));
 		  callback();
 		})
 	  });

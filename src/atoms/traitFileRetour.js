@@ -165,7 +165,6 @@ export default function traitFileRetour(position, remettant) {
             }
         }).then(files => {
             const promiseQ = [];
-
             mkdirp(`${archiveLocation}${path.join("reception", remettant === true ? position.remettant.codeEdi : position.codeEdi, "remonte")}`, () => {
                 files.forEach(file => {
                     promiseQ.push(

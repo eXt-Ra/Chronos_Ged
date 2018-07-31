@@ -237,17 +237,6 @@ export default function traitFileRetourAlpha(position, societe) {
   }
 
   function duplicateFile(source, copy, fileType) {
-	// return new Promise((resolve, reject) => {
-	//   fs.copy(
-	// 	  source,
-	// 	  copy,
-	// 	  err => {
-	// 		if (err) {
-	// 		  reject(err);
-	// 		}
-	// 		resolve(copy);
-	// 	  })
-	// })
 	return new Promise((resolve, reject) => {
 	  switch (fileType) {
 		case "jpg":

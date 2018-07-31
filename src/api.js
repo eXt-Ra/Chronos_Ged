@@ -65,12 +65,13 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-access-token");
-  if ("OPTIONS" == req.method) {
+  if ("OPTIONS" === req.method) {
 	res.sendStatus(200);
   } else {
 	next();
   }
 });
+
 app.get('/currentsuivi', function (req, res) {
   res.json(currentSuivi);
 });
@@ -83,6 +84,7 @@ app.get('/suivihistory', function (req, res) {
 	res.json(resData);
   })
 });
+
 app.get('/error', function (req, res) {
 
   return ErrorSchema.aggregate([
@@ -135,6 +137,7 @@ app.post('/societe/params', function (req, res) {
 		}
 	  });
 });
+
 app.post('/societe/retour', function (req, res) {
   SocieteSchema.findOneAndUpdate(
 	  {codeEdi: req.body.codeEdi},
@@ -146,6 +149,7 @@ app.post('/societe/retour', function (req, res) {
 		}
 	  });
 });
+
 app.get('/retour/regen', (req, res) => {
   PositionSchema.findOne({numEquinoxe: req.query.numEquinoxe})
 	  .then(position => {
@@ -398,35 +402,36 @@ app.get('/crypt/:numdoc', (req, res) => {
 // });
 
 //Token Security for api
-// gedRouter.use(function (req, res, next) {
-//     UserApi.findOne({
-//         token: req.headers["x-access-token"]
-//     }, (err, user) => {
-//         if (err) {
-//             throw err;
-//         }
-//         if (!user) {
-//             return res.status(403).send({
-//                 success: false,
-//                 message: "No valid token provided."
-//             });
-//         } else if (user) {
-//             if (user.active) {
-//                 next();
-//                 user.save((err) => {
-//                     if (err) {
-//                         throw err;
-//                     }
-//                 });
-//             } else {
-//                 return res.status(403).send({
-//                     success: false,
-//                     message: "Token désactivé"
-//                 });
-//             }
-//         }
-//     });
-// });
+gedRouter.use(function (req, res, next) {
+  UserApi.findOne({
+	token: req.headers["x-access-token"]
+  }, (err, user) => {
+	if (err) {
+	  throw err;
+	}
+	if (!user) {
+	  return res.status(403).send({
+		success: false,
+		message: "No valid token provided."
+	  });
+	} else if (user) {
+	  if (user.active) {
+		req.userapi = user;
+		next();
+		user.save((err) => {
+		  if (err) {
+			throw err;
+		  }
+		});
+	  } else {
+		return res.status(403).send({
+		  success: false,
+		  message: "Token désactivé"
+		});
+	  }
+	}
+  });
+});
 
 gedRouter.get('/old/:numeroequinoxe', function (req, res) {
   const numeroEquinoxe = req.params.numeroequinoxe;
@@ -541,7 +546,6 @@ gedRouter.get('/file/:file', function (req, res) {
 	console.timeEnd("requestApi");
   });
 });
-
 gedRouter.post('/', (req, res) => {
   const suivis = [];
   const ids = [];
@@ -567,7 +571,6 @@ gedRouter.post('/', (req, res) => {
 	}
   });
 
-
   const initialState = {suivis, ids};
   const appString = renderToString(<DocumentInterface {...initialState} />);
 
@@ -589,7 +592,6 @@ gedRouter.post('/', (req, res) => {
 	});
   })
 });
-
 gedRouter.post('/pole', (req, res) => {
   const promiseQ = [];
   const filetype = req.body.filetype || null;
@@ -600,11 +602,12 @@ gedRouter.post('/pole', (req, res) => {
 
 	req.body.numEquinoxe.forEach(numeroEquinoxe => {
 	  if (numeroEquinoxe !== "") {
-		promiseQ.push(gedDocumentGed(numeroEquinoxe, null, filetype, merge));
+		promiseQ.push(gedDocumentGed(numeroEquinoxe, null, filetype, merge, req.userapi));
 	  }
 	});
 
 	Promise.all(promiseQ).then(results => {
+
 		  const output = fs.createWriteStream(path.join(archiveLocation, "temp", `${requestId}.zip`));
 		  const archive = archiver('zip', {
 			zlib: {level: 9}
@@ -615,44 +618,58 @@ gedRouter.post('/pole', (req, res) => {
 			  console.timeEnd("requestApi");
 			});
 			results.forEach(folder => {
-			  rimraf(folder[0], err => {
-				if (err) {
-				  console.log(err);
-				}
-			  });
+			  if (folder.docFolderPath) {
+				rimraf(folder.docFolderPath, err => {
+				  if (err) {
+					console.log(err);
+				  }
+				});
+			  }
 			})
 		  });
 
 		  archive.pipe(output);
 
 		  const promiseK = [];
-		  results.forEach(folder => {
-			const folderName = folder[0].split(path.sep)[folder[0].split(path.sep).length - 1];
-			promiseK.push(
-				new Promise((resolve => {
-				  fs.readdir(folder[0], function (err, items) {
-					items.forEach(file => {
-					  archive.file(path.join(archiveLocation, "temp", folderName, file),
-						  {name: `${generateNomenclature(nomenclature, folder[1], file, "REFTMS")}.${filetype}`});
-					});
-					resolve();
-				  })
-				}))
-			)
+		  results.forEach((folder, index) => {
+			if (folder.docFolderPath) {
+			  const folderName = folder.docFolderPath.split(path.sep)[folder.docFolderPath.split(path.sep).length - 1];
+			  promiseK.push(
+				  new Promise((resolve => {
+					fs.readdir(folder.docFolderPath, function (err, items) {
+					  items.forEach(file => {
+						archive.file(path.join(archiveLocation, "temp", folderName, file),
+							{name: `${generateNomenclature(nomenclature, folder.pos, file, "REFTMS")}.${filetype}`});
+					  });
+					  if (index === results.length - 1) {
+						const resultStatus = [];
+						results.forEach(object => {
+						  resultStatus.push(object.status)
+						});
+						console.log(path.join(archiveLocation, "temp", folderName, `report.json`));
+						fs.writeFile(path.join(archiveLocation, "temp", folderName, `report.json`, JSON.stringify(resultStatus), () => {
+						  resolve();
+						}));
+					  } else {
+						resolve();
+					  }
+					})
+				  }))
+			  )
+			}
 		  });
 		  Promise.all(promiseK).then(() => {
 			archive.finalize();
 		  })
 		}
-	).catch(() => {
-	  console.log("ERROR 3");
+	).catch((err) => {
+	  console.log(err);
 	  res.status(500).send("Une erreur est survenue")
 	})
 
   } else {
-	res.status(400).send("L'argument filetype est obligatoire");
+	res.status(400).send("L'argument filetype est obligatoire ( jpg | pdf )");
   }
-
 });
 
 gedRouter.get('/pole/:date', function (req, res) {
@@ -715,7 +732,6 @@ gedRouter.get('/pole/:date', function (req, res) {
 			})
 		  }
 	  ).catch(() => {
-		console.log("ERROR 3");
 		res.status(500).send("Une erreur est survenue")
 	  })
 	})
