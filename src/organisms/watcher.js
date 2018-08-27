@@ -13,7 +13,7 @@ import GedError from "../Class/GedError";
 import {addSuivi, changeProgress, changeStatus, removeSuivi} from "./suiviTreatment";
 import Suivi from "../Class/Suivi";
 import GedDownload from './../Schema/GedDownloadSchema'
-
+import SocieteMongo from './../Schema/SocieteSchema';
 import LineByLineReader from 'line-by-line';
 import downloadImages from "../atoms/downloadImages";
 import path from 'path'
@@ -22,7 +22,7 @@ import async from "async";
 import fileTypeCheck from "../atoms/fileTypeCheck";
 import generateNomenclature from "../atoms/generateNomenclature";
 import {CronJob} from "cron";
-import fs from "fs";
+import fs from "fs-extra";
 import traitRetourApha from "../molecules/traitRetourApha";
 import moment from "moment/moment";
 import diffMongoMysql from "../atoms/diffMongoMysql";
@@ -128,55 +128,141 @@ function treatmentZip(filePath) {
   console.log(`File ${filePath} has been added`);
   if (_.endsWith(filePath, '.XML') || _.endsWith(filePath, '.xml')) {
 	const arrSplit = filePath.split(path.sep);
-	const societe = arrSplit[arrSplit.length - 3];
 	const zipSource = arrSplit[arrSplit.length - 1];
-	traitFiles([new Document(codeEdi, societe, zipSource, filePath)])
-		.then(documents => {
-		  if (documents[1].length > 0) {
-			return readBarcode(documents[1]);
-		  } else {
-			return Promise.reject("NOWAGOUDA");
-		  }
-		})
-		.then(documents => {
-		  if (documents.length > 0) {
-			return traitBarcode(documents);
-		  } else {
-			return Promise.reject(new GedError("403", `Stop after readBarcodes pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after readBarcodes", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
-		  }
-		})
-		.then(positions => {
-		  if (positions.length > 0) {
-			return savePositionsDB(positions);
-		  } else {
-			return Promise.reject(new GedError("404", `Stop after traitBarcode pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after traitBarcode", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
-		  }
-		})
-		.then(positions => {
-		  if (positions.length > 0) {
-			return createLdsAndJpg0(positions);
-		  } else {
-			return Promise.reject(new GedError("405", `Stop after savePositionsDB pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after savePositionsDB", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
-		  }
-		})
-		.then(positions => {
-		  if (positions.length > 0) {
-			return archiveFiles(positions, true);
-		  } else {
-			return Promise.reject(new GedError("406", `Stop after createLdsAndJpg0 pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after createLdsAndJpg0", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
-		  }
-		})
-		.then(positions => {
-		  return traitRetourApha(positions);
-		})
-		.catch(err => {
-		  if (err !== "NOWAGOUDA") {
-			//error handler
-			console.log("Good error handling");
+
+	SocieteMongo.findOne({
+	  codeEdi: codeEdi
+	}).then((societe) => {
+	  if (societe != null) {
+		traitFiles([new Document(codeEdi, societe, zipSource, filePath)])
+			.then(documents => {
+			  if (documents[1].length > 0) {
+				return readBarcode(documents[1]);
+			  } else {
+				return Promise.reject("NOWAGOUDA");
+			  }
+			})
+			.then(documents => {
+			  if (documents.length > 0) {
+				return traitBarcode(documents);
+			  } else {
+				return Promise.reject(new GedError("403", `Stop after readBarcodes pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after readBarcodes", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+			  }
+			})
+			.then(positions => {
+			  if (positions.length > 0) {
+				return savePositionsDB(positions);
+			  } else {
+				return Promise.reject(new GedError("404", `Stop after traitBarcode pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after traitBarcode", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+			  }
+			})
+			.then(positions => {
+			  if (positions.length > 0) {
+				return createLdsAndJpg0(positions);
+			  } else {
+				return Promise.reject(new GedError("405", `Stop after savePositionsDB pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after savePositionsDB", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+			  }
+			})
+			.then(positions => {
+			  if (positions.length > 0) {
+				return archiveFiles(positions, true);
+			  } else {
+				return Promise.reject(new GedError("406", `Stop after createLdsAndJpg0 pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after createLdsAndJpg0", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+			  }
+			})
+			.then(positions => {
+			  return traitRetourApha(positions);
+			})
+			.catch(err => {
+			  if (err !== "NOWAGOUDA") {
+				//error handler
+				console.log("Good error handling");
+				console.log(err);
+				setError(err);
+			  }
+			})
+	  }
+	}).catch(err => {
+	  if (err) {
+		console.log(err);
+	  }
+	});
+
+  }
+
+  if (_.endsWith(filePath, '.pdf') || _.endsWith(filePath, '.jpg')) {
+	const arrSplit = filePath.split(path.sep);
+	const fileName = arrSplit[arrSplit.length - 1];
+	const zipFolder = arrSplit[arrSplit.length - 1].slice(0, -4);
+	const outputDir = path.join("output", codeEdi, zipFolder);
+	console.log(codeEdi)
+	fs.copy(
+		filePath,
+		path.join("E:", "Ged_NodeJS", outputDir, fileName),
+		err => {
+		  if (err) {
 			console.log(err);
-			setError(err);
+		  } else {
+			SocieteMongo.findOne({
+			  codeEdi: codeEdi
+			}).then((societe) => {
+			  console.log(societe)
+			  if (societe != null) {
+				traitFiles([new Document(codeEdi, societe, fileName, path.join(outputDir, fileName))])
+					.then(documents => {
+					  if (documents[1].length > 0) {
+						return readBarcode(documents[1]);
+					  } else {
+						return Promise.reject("NOWAGOUDA");
+					  }
+					})
+					.then(documents => {
+					  if (documents.length > 0) {
+						return traitBarcode(documents);
+					  } else {
+						return Promise.reject(new GedError("403", `Stop after readBarcodes pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after readBarcodes", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+					  }
+					})
+					.then(positions => {
+					  if (positions.length > 0) {
+						return savePositionsDB(positions);
+					  } else {
+						return Promise.reject(new GedError("404", `Stop after traitBarcode pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after traitBarcode", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+					  }
+					})
+					.then(positions => {
+					  if (positions.length > 0) {
+						return createLdsAndJpg0(positions);
+					  } else {
+						return Promise.reject(new GedError("405", `Stop after savePositionsDB pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after savePositionsDB", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+					  }
+					})
+					.then(positions => {
+					  if (positions.length > 0) {
+						return archiveFiles(positions, true);
+					  } else {
+						return Promise.reject(new GedError("406", `Stop after createLdsAndJpg0 pour ${ filePath.split(path.sep)[filePath.split(path.sep).length - 1]}`, filePath.split(path.sep)[filePath.split(path.sep).length - 1], filePath.split(path.sep)[filePath.split(path.sep).length - 1], "Stop after createLdsAndJpg0", filePath.split(path.sep)[filePath.split(path.sep).length - 3], 3, true));
+					  }
+					})
+					.then(positions => {
+					  return traitRetourApha(positions);
+					})
+					.catch(err => {
+					  if (err !== "NOWAGOUDA") {
+						//error handler
+						console.log("Good error handling");
+						console.log(err);
+						setError(err);
+					  }
+					})
+			  }
+			}).catch(err => {
+			  if (err) {
+				console.log(err);
+			  }
+			});
 		  }
-		})
+		});
   }
 
   if (_.endsWith(filePath, '.zip')) {

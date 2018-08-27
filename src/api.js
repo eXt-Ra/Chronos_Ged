@@ -53,6 +53,8 @@ import mkdirp from "mkdirp";
 import traitFileRetourAlpha from "./atoms/traitFileRetourAlpha";
 import diffMongoMysql from "./atoms/diffMongoMysql";
 import checkManquantretour from "./atoms/checkManquantretour";
+import updateRemttantObject from "./atoms/updateRemttantObject";
+import traitRetourAphaOnlyDistri from "./molecules/traitRetourAphaOnlyDistri";
 
 const urlCrypt = url_crypt('~{ry*I)==yU/]9<7DPk!Hj"R#:-/Z7(hTBnlRS=4CXF');
 
@@ -171,6 +173,8 @@ app.get('/retour/regen', (req, res) => {
 	  })
 });
 
+
+
 app.get('/checkStockdoc/:date', (req, res) => {
   diffMongoMysql(moment(req.params.date).format()).then((result) => {
 	res.send(result);
@@ -183,6 +187,14 @@ app.get('/checkManquant/:date', (req, res) => {
 	res.send(result);
   })
 });
+
+
+app.post('/updateRemttant', (req, res) => {
+  updateRemttantObject(req.body.numEquinoxe).then((result) => {
+	res.send(result);
+  })
+});
+
 
 app.post('/retour/multiregen', (req, res) => {
   const positionsToDo = [];
@@ -210,6 +222,38 @@ app.post('/retour/multiregen', (req, res) => {
   }, function () {
 	console.log("SPLALALA");
 	traitRetourApha(positionsToDo).then(data => {
+
+	});
+	res.send([positionsConnu, positionsInconnu]);
+  });
+});
+
+app.post('/retour/multiregenonlydistri', (req, res) => {
+  const positionsToDo = [];
+  const positionsInconnu = [];
+  const positionsConnu = [];
+  async.each(req.body.numEquinoxe, function (numEquinoxe, callback) {
+	PositionSchema.findOne({numEquinoxe: numEquinoxe})
+		.then(position => {
+		  if (position != null) {
+			position.documents = position.docs;
+			const pos = new Position(position.numEquinoxe, position.codeEdi, position.societe, position.archiveSource);
+			pos.remettant = position.remettant;
+			pos.numeroDoc = position.numeroDoc;
+			position.docs.forEach(doc => {
+			  const newDoc = new Document(doc.codeEdi, position.societe, doc.archiveSource, path.join(doc.currentFileLocation, doc.fileName));
+			  pos.documents.push(newDoc);
+			});
+			positionsToDo.push(pos);
+			positionsConnu.push(numEquinoxe);
+		  } else {
+			positionsInconnu.push(numEquinoxe);
+		  }
+		  callback()
+		})
+  }, function () {
+	console.log("SPLALALA");
+	traitRetourAphaOnlyDistri(positionsToDo).then(data => {
 
 	});
 	res.send([positionsConnu, positionsInconnu]);

@@ -18,6 +18,7 @@ import GedError from "./Class/GedError";
 import ErrorBot from "./organisms/errorBot";
 import generateOldGed from "./molecules/generateOldGed";
 
+// checkScanYestedayByCodeEdi();
 
 mongoose.Promise = Promise;
 
@@ -98,6 +99,7 @@ import * as async from "async";
 
 import organisms from "./organisms/mailer";
 import errorMail from "./View/Mail/ErrorMail";
+import checkScanYestedayByCodeEdi from "./atoms/checkScanYestedayByCodeEdi";
 
 if (cluster.isMaster) {
   console.log(`

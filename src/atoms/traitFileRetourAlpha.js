@@ -318,49 +318,88 @@ export default function traitFileRetourAlpha(position, societe) {
 
   return new Promise(async (resolve, reject) => {
 	let fileToMove = [];
+
+	function retourError() {
+	  if (position.remettant.codeEdi === societe.codeEdi) {
+		PositionSchema.update({
+			  "numEquinoxe": position.numEquinoxe
+			}, {
+			  $set: {
+				'state.retourRemettant': false
+			  }
+			},
+			function (err, model) {
+			  if (err) {
+				console.log(err);
+				setError(err);
+			  }
+			});
+	  } else {
+		PositionSchema.update({
+			  "numEquinoxe": position.numEquinoxe
+			}, {
+			  $set: {
+				'state.retourDistributeur': false
+			  }
+			},
+			function (err, model) {
+			  if (err) {
+				console.log(err);
+				setError(err);
+			  }
+			});
+	  }
+	}
+
 	try {
 	  fileToMove = await fileTreatment(position, config.multi);
 	  // eachOfLimit(fileToMove, 1, async (filePath, index, callback) => {
 	  // eachOfLimit(fileToMove, 1, async (filePath, index, callback) => {
 	  await asyncForEach(fileToMove, async (filePath, index) => {
-		mkdirp(`${archiveLocation}${path.join("reception", societe.codeEdi, "remonte")}`, async () => {
-		  let refTMS = "";
-		  if (config.nomenclature.pattern.indexOf("REFTMS") > -1) {
-			refTMS = await getRefTMS(position);
+			mkdirp(`${archiveLocation}${path.join("reception", societe.codeEdi, "remonte")}`, async () => {
+			  let refTMS = "";
+			  if (config.nomenclature.pattern.indexOf("REFTMS") > -1) {
+				refTMS = await getRefTMS(position);
+			  }
+
+			  function getRetourFolder(codeEdi) {
+				switch (codeEdi) {
+				  case "FOURREI":
+					return "FOURTOU";
+				  case "GAUTFRO":
+					return "GAUTSAI";
+				  case "MESSPOL":
+				  case "JEANBES":
+				  case "SDTLFRO":
+				  case "COMAGAR":
+				  case "COMACAM":
+				  case "STJOCHA":
+				  case "STJOCHO":
+					return "RODIGEN";
+				  default:
+					return codeEdi;
+				}
+			  }
+
+			  const fileName = filePath.split(path.sep)[filePath.split(path.sep).length - 1];
+			  const newFilePath = path.join(`${archiveLocation}reception`,
+				  getRetourFolder(societe.codeEdi), "remonte",
+				  `${generateNomenclature(config.nomenclature.pattern, position, fileName, refTMS)}${fileName.substr(fileName.length - 4)}`);
+
+			  try {
+				await moveTo(
+					filePath,
+					newFilePath
+				);
+				console.log(`Move ${filePath} to ${newFilePath}`);
+			  }
+			  catch (err) {
+				retourError();
+				resolve();
+			  }
+			});
 		  }
-
-		  function getRetourFolder(codeEdi) {
-			switch (codeEdi) {
-			  case "FOURREI":
-				return "FOURTOU";
-			  case "GAUTFRO":
-				return "GAUTSAI";
-			  case "MESSPOL":
-			  case "JEANBES":
-			  case "SDTLFRO":
-			  case "COMAGAR":
-			  case "COMACAM":
-			  case "STJOCHA":
-			  case "STJOCHO":
-				return "RODIGEN";
-			  default:
-				return codeEdi;
-			}
-		  }
-
-		  const fileName = filePath.split(path.sep)[filePath.split(path.sep).length - 1];
-		  const newFilePath = path.join(`${archiveLocation}reception`,
-			  getRetourFolder(societe.codeEdi), "remonte",
-			  `${generateNomenclature(config.nomenclature.pattern, position, fileName, refTMS)}${fileName.substr(fileName.length - 4)}`);
-
-		  await moveTo(
-			  filePath,
-			  newFilePath
-		  );
-
-		  console.log(`Move ${filePath} to ${newFilePath}`);
-		});
-	  });
+	  );
 
 	  if (position.remettant.codeEdi === societe.codeEdi) {
 		PositionSchema.update({
@@ -393,36 +432,11 @@ export default function traitFileRetourAlpha(position, societe) {
 	  console.log(`Finish traitFileRetourAlpha pour ${position.numEquinoxe} for ${societe.codeEdi}`);
 	  resolve(fileToMove);
 	}
-	catch (err) {
-	  if (position.remettant.codeEdi === societe.codeEdi) {
-		PositionSchema.update({
-			  "numEquinoxe": position.numEquinoxe
-			}, {
-			  $set: {
-				'state.retourRemettant': false
-			  }
-			},
-			function (err, model) {
-			  if (err) {
-				console.log(err);
-			  }
-			});
-	  } else {
-		PositionSchema.update({
-			  "numEquinoxe": position.numEquinoxe
-			}, {
-			  $set: {
-				'state.retourDistributeur': false
-			  }
-			},
-			function (err, model) {
-			  if (err) {
-				console.log(err);
-			  }
-			});
-	  }
-	  setError(err);
+	catch
+		(err) {
+	  retourError();
 	  resolve();
 	}
-  });
+  })
+	  ;
 }

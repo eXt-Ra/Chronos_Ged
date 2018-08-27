@@ -54,9 +54,19 @@ async function downloadImage(imgToDl, codeEdi, source) {
 		  codeEdi: imgToDl.codeEdi
 		}).then((societe) => {
 		  if (societe != null) {
-			const newDoc = new Document(imgToDl.codeEdi, societe, source !== null ? source : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1], filePath);
-			newDoc.barecode = [`POLE${imgToDl.numeroEquinoxe}`];
-			resolve(newDoc);
+			fs.stat(filePath, (err, stats) => {
+			  if (err){
+				reject(err);
+			  }else{
+			    if (stats["size"] > 0){
+				  const newDoc = new Document(imgToDl.codeEdi, societe, source !== null ? source : imgToDl.fileName.split(path.sep)[imgToDl.fileName.split(path.sep).length - 1], filePath);
+				  newDoc.barecode = [`POLE${imgToDl.numeroEquinoxe}`];
+				  resolve(newDoc);
+			    }else{
+				  reject(new Error("File size 0 ko"));
+				}
+			  }
+			});
 		  } else {
 			// reject(new GedError("DB", `Societe introuvable pour le codeEdi ${codeEdi}`, zipName, zipName, err, codeEdi, 3, true));
 			reject(`Societe introuvable pour le codeEdi ${imgToDl.codeEdi}`);
@@ -69,8 +79,9 @@ async function downloadImage(imgToDl, codeEdi, source) {
 		});
 	  });
 
-	  response.data.on('error', () => {
-		reject()
+	  response.data.on('error', (err) => {
+		console.log(err);
+		reject(err);
 	  })
 	}
 	catch (err) {
@@ -104,7 +115,7 @@ export default function (imagesToDl, codeEdi, source) {
 		  callback(null);
 		}).catch(err => {
 		  console.log(err);
-		  setError(new GedError("121",`Erreur lors du téléchargement de l'url ${imgToDl.fileUrl}`,"unknown",source,err, codeEdi,1, false));
+		  setError(new GedError("121", `Erreur lors du téléchargement de l'url ${imgToDl.fileUrl}`, "unknown", source, err, codeEdi, 1, false));
 		  callback();
 		})
 	  });
