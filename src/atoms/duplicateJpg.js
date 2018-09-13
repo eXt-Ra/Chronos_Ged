@@ -28,6 +28,11 @@ export default function duplicateJpg(document) {
                         resolve(document);
                     });
                 });
+
+                //stream on error ?
+			  stream.on('error', () => {
+				reject(new GedError("114", `Erreur lors du fs.reader de ${document.fileName}`, document.fileName, document.archiveSource, "An error", document.codeEdi, 2, false));
+			  });
             });
         });
     }))

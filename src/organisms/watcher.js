@@ -28,6 +28,7 @@ import moment from "moment/moment";
 import diffMongoMysql from "../atoms/diffMongoMysql";
 import checkManquantretour from "../atoms/checkManquantretour";
 import Document from "../Class/Document";
+import rimraf from "rimraf";
 
 const currentSuivi = [];
 export {currentSuivi};
@@ -103,6 +104,39 @@ const jobMissInStockdoc = new CronJob('00 30 23 * * 1-5', function () {
 }, null, false, 'Europe/Paris');
 
 jobMissInStockdoc.start();
+
+const jobPurgeArchive = new CronJob('* * * 1 * *', function () {
+  console.log("RUN CRON jobPurgeArchive");
+  fs.readdir("Z:\\archive", function (err, codeEdis) {
+	codeEdis.forEach(codeEdi => {
+	  fs.readdir(path.join("Z:", "archive", codeEdi), function (err, folders) {
+		folders.forEach(folder => {
+		  fs.readdir(path.join("Z:", "archive", codeEdi, folder), function (err, files) {
+			if (files.length > 0) {
+			  fs.stat(path.join("Z:", "archive", codeEdi, folder, files[0]), function (err, stat) {
+				const now = new Date().getTime();
+				const endTime = new Date(stat.ctime).getTime() + moment.duration(3, 'months');
+				if (now > endTime) {
+				  rimraf(path.join("Z:", "archive", codeEdi, folder), function () {
+					console.log(path.join("Z:", "archive", codeEdi, folder));
+					console.log('done');
+				  });
+				}
+			  });
+			} else {
+			  rimraf(path.join("Z:", "archive", codeEdi, folder), function () {
+				console.log(path.join("Z:", "archive", codeEdi, folder));
+				console.log('done');
+			  });
+			}
+		  });
+		});
+	  })
+	})
+  });
+}, null, false, 'Europe/Paris');
+
+jobPurgeArchive.start();
 
 initFoler().then((results) => {
   watcher = chokidar.watch(results, {
